@@ -14,6 +14,9 @@ services:
       - PORT=8088
       - DATA_DIR=/data
       - TZ=Europe/Rome
+      # Opzionale: credenziali amministratore predefinite (configurabili anche via Web UI al primo accesso)
+      # - LANWATCH_ADMIN_USER=admin
+      # - LANWATCH_ADMIN_PASSWORD=password_segreta_qui
     volumes:
       # Directory per il database persistente SQLite (lanscanner.db)
       - ./data:/data

@@ -88,6 +88,15 @@ def init_db(db_path: Path = DB_PATH):
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY,
+            username TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
 

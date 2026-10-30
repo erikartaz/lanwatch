@@ -83,6 +83,120 @@
 </head>
 <body class="min-h-full flex flex-col font-sans antialiased bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 selection:bg-emerald-500 selection:text-white transition-colors duration-200">
 
+  <!-- High-Tech Glassmorphic Sentinel Authentication Modal / Overlay -->
+  <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl transition-all duration-300 hidden">
+    <!-- Ambient Cyber Glows -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-2xl shadow-emerald-950/40 space-y-6">
+      <!-- Sentinel Brand Header -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 items-center justify-center shadow-lg shadow-emerald-500/30 text-white mb-2">
+          <i data-lucide="shield-check" class="w-9 h-9" id="auth-shield-icon"></i>
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+          LANWatch <span class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Sentinel</span>
+        </h2>
+        <p id="auth-card-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          Accesso riservato alla console di sicurezza LAN
+        </p>
+      </div>
+
+      <!-- Alert Banner -->
+      <div id="auth-alert" class="hidden p-3 rounded-xl text-xs font-medium border flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0" id="auth-alert-icon"></i>
+        <span id="auth-alert-text"></span>
+      </div>
+
+      <!-- FORM 1: LOGIN -->
+      <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nome Utente</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="text" id="login-username" required autocomplete="username" value="admin"
+              class="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium transition-all"
+              placeholder="Nome utente">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="password" id="login-password" required autocomplete="current-password"
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium transition-all"
+              placeholder="Inserisci password">
+            <button type="button" onclick="togglePasswordVisibility('login-password', 'login-eye-icon')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200">
+              <i data-lucide="eye" class="w-4 h-4" id="login-eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none text-slate-600 dark:text-slate-400">
+            <input type="checkbox" id="login-remember" class="rounded bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-emerald-500 focus:ring-0" checked>
+            <span>Resta connesso (30 giorni)</span>
+          </label>
+        </div>
+
+        <button type="submit" id="btn-login-submit"
+          class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+          <span>Accedi alla Sentinel</span>
+        </button>
+      </form>
+
+      <!-- FORM 2: SETUP (PRIMO ACCESSO) -->
+      <form id="form-setup" onsubmit="handleSetupSubmit(event)" class="space-y-4 hidden">
+        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-start gap-2">
+          <i data-lucide="key" class="w-4 h-4 mt-0.5 shrink-0 text-emerald-500"></i>
+          <span>Crea le credenziali d'accesso prima di esporre LANWatch tramite Caddy o all'esterno della LAN.</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nome Utente Amministratore</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="text" id="setup-username" required value="admin"
+              class="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium transition-all"
+              placeholder="admin">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nuova Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="password" id="setup-password" required minlength="6"
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium transition-all"
+              placeholder="Almeno 6 caratteri">
+            <button type="button" onclick="togglePasswordVisibility('setup-password', 'setup-eye-icon')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200">
+              <i data-lucide="eye" class="w-4 h-4" id="setup-eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Conferma Nuova Password</label>
+          <div class="relative">
+            <i data-lucide="check" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="password" id="setup-password-confirm" required minlength="6"
+              class="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium transition-all"
+              placeholder="Ripeti la password">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-setup-submit"
+          class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Inizializza e Accedi</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-40 transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
@@ -149,6 +263,17 @@
           <i data-lucide="radar" class="w-4 h-4" id="scan-icon"></i>
           <span id="scan-btn-text">Scansione Passiva</span>
         </button>
+
+        <!-- User / Logout Pill -->
+        <div id="auth-user-pill" class="hidden items-center gap-1.5 pl-2 border-l border-slate-300 dark:border-slate-700">
+          <span class="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+            <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span id="nav-username">admin</span>
+          </span>
+          <button onclick="handleLogout()" class="p-1.5 text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors" title="Disconnetti sessione">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -689,6 +814,58 @@
           </div>
         </div>
       </div>
+
+      <!-- Security & Access Credentials Card -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5 shadow-sm max-w-4xl mx-auto">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold text-2xl">
+              🛡️
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                Sicurezza & Credenziali Amministratore
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Gestisci la password di protezione per l'accesso locale e l'esposizione sicura via Reverse Proxy (Caddy)</p>
+            </div>
+          </div>
+          <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Protezione Attiva (<span id="settings-admin-username">admin</span>)
+          </span>
+        </div>
+
+        <form id="form-change-password" onsubmit="handleChangePassword(event)" class="space-y-4 max-w-lg">
+          <div id="change-pwd-alert" class="hidden p-3 rounded-xl text-xs font-medium border flex items-center gap-2">
+            <span id="change-pwd-alert-text"></span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Password Attuale</label>
+            <input type="password" id="input-old-password" required
+              class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nuova Password</label>
+              <input type="password" id="input-new-password" required minlength="6"
+                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Conferma Nuova Password</label>
+              <input type="password" id="input-confirm-password" required minlength="6"
+                class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium">
+            </div>
+          </div>
+
+          <button type="submit" id="btn-change-pwd-submit"
+            class="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow-sm">
+            <i data-lucide="key" class="w-4 h-4"></i>
+            <span>Aggiorna Password Amministratore</span>
+          </button>
+        </form>
+      </div>
     </div>
 
   </main>
@@ -874,6 +1051,287 @@
     let sortColumn = 'ip';
     let sortDirection = 1; // 1 = asc, -1 = desc
 
+    // --- AUTHENTICATION STATE & LOGIC ---
+    let currentAuthStatus = { auth_configured: false, auth_enabled: false, logged_in: false, username: 'admin' };
+    let sessionToken = localStorage.getItem('lanwatch_session_token') || sessionStorage.getItem('lanwatch_session_token') || null;
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function showAuthAlert(msg, isSuccess = false) {
+      const alertBox = document.getElementById('auth-alert');
+      const alertText = document.getElementById('auth-alert-text');
+      const alertIcon = document.getElementById('auth-alert-icon');
+      if (!alertBox) return;
+      alertBox.classList.remove('hidden', 'bg-rose-500/10', 'border-rose-500/20', 'text-rose-500', 'bg-emerald-500/10', 'border-emerald-500/20', 'text-emerald-500');
+      if (isSuccess) {
+        alertBox.classList.add('bg-emerald-500/10', 'border-emerald-500/20', 'text-emerald-500');
+        if (alertIcon) alertIcon.setAttribute('data-lucide', 'check-circle');
+      } else {
+        alertBox.classList.add('bg-rose-500/10', 'border-rose-500/20', 'text-rose-500');
+        if (alertIcon) alertIcon.setAttribute('data-lucide', 'alert-circle');
+      }
+      alertText.textContent = msg;
+      lucide.createIcons();
+    }
+
+    function showAuthOverlay(mode = 'login', alertMsg = null) {
+      const overlay = document.getElementById('auth-overlay');
+      const formLogin = document.getElementById('form-login');
+      const formSetup = document.getElementById('form-setup');
+      const subtitle = document.getElementById('auth-card-subtitle');
+      if (!overlay) return;
+
+      overlay.classList.remove('hidden');
+
+      if (mode === 'setup') {
+        formLogin.classList.add('hidden');
+        formSetup.classList.remove('hidden');
+        subtitle.textContent = 'Configurazione iniziale credenziali amministratore';
+      } else {
+        formSetup.classList.add('hidden');
+        formLogin.classList.remove('hidden');
+        subtitle.textContent = 'Accesso riservato alla console di sicurezza LAN';
+      }
+
+      if (alertMsg) {
+        showAuthAlert(alertMsg, false);
+      } else {
+        const alertBox = document.getElementById('auth-alert');
+        if (alertBox) alertBox.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function hideAuthOverlay() {
+      const overlay = document.getElementById('auth-overlay');
+      if (overlay) overlay.classList.add('hidden');
+    }
+
+    function updateNavAuth(username) {
+      const navPill = document.getElementById('auth-user-pill');
+      const navUser = document.getElementById('nav-username');
+      const settingsUser = document.getElementById('settings-admin-username');
+      if (navPill) {
+        navPill.classList.remove('hidden');
+        navPill.classList.add('flex');
+      }
+      if (navUser) navUser.textContent = username || 'admin';
+      if (settingsUser) settingsUser.textContent = username || 'admin';
+      lucide.createIcons();
+    }
+
+    async function checkAuthStatus() {
+      try {
+        const headers = {};
+        if (sessionToken) {
+          headers['Authorization'] = `Bearer ${sessionToken}`;
+        }
+        const res = await fetch('/api/auth/status', { headers });
+        if (!res.ok) {
+          showAuthOverlay('login');
+          return false;
+        }
+        currentAuthStatus = await res.json();
+
+        if (!currentAuthStatus.auth_configured) {
+          showAuthOverlay('setup');
+          return false;
+        } else if (!currentAuthStatus.logged_in) {
+          showAuthOverlay('login');
+          return false;
+        } else {
+          hideAuthOverlay();
+          updateNavAuth(currentAuthStatus.username);
+          return true;
+        }
+      } catch (err) {
+        console.error('Error checking auth status:', err);
+        showAuthOverlay('login', 'Errore di connessione al server LANWatch.');
+        return false;
+      }
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('login-username');
+      const passwordInput = document.getElementById('login-password');
+      const rememberInput = document.getElementById('login-remember');
+      const submitBtn = document.getElementById('btn-login-submit');
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+      const remember_me = rememberInput.checked;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="animate-spin mr-2">⏳</span> Accesso in corso...`;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, remember_me }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+          sessionToken = data.token;
+          if (remember_me) {
+            localStorage.setItem('lanwatch_session_token', sessionToken);
+          } else {
+            sessionStorage.setItem('lanwatch_session_token', sessionToken);
+          }
+          currentAuthStatus.logged_in = true;
+          currentAuthStatus.username = data.username;
+          hideAuthOverlay();
+          updateNavAuth(data.username);
+          setupWebSocket();
+          loadAllData();
+          setInterval(loadNetworkHealth, 30000);
+        } else {
+          showAuthAlert(data.detail || 'Credenziali non corrette.');
+        }
+      } catch (err) {
+        showAuthAlert('Errore durante la connessione al server: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i data-lucide="shield" class="w-4 h-4"></i><span>Accedi alla Sentinel</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function handleSetupSubmit(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('setup-username');
+      const passwordInput = document.getElementById('setup-password');
+      const confirmInput = document.getElementById('setup-password-confirm');
+      const submitBtn = document.getElementById('btn-setup-submit');
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+      const confirm = confirmInput.value;
+
+      if (password !== confirm) {
+        showAuthAlert('Le due password inserite non coincidono!');
+        return;
+      }
+      if (password.length < 6) {
+        showAuthAlert('La password deve contenere almeno 6 caratteri.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="animate-spin mr-2">⏳</span> Inizializzazione...`;
+
+      try {
+        const res = await fetch('/api/auth/setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+          sessionToken = data.token;
+          localStorage.setItem('lanwatch_session_token', sessionToken);
+          currentAuthStatus.logged_in = true;
+          currentAuthStatus.username = data.username;
+          currentAuthStatus.auth_configured = true;
+          hideAuthOverlay();
+          updateNavAuth(data.username);
+          setupWebSocket();
+          loadAllData();
+          setInterval(loadNetworkHealth, 30000);
+        } else {
+          showAuthAlert(data.detail || 'Errore durante la configurazione iniziale.');
+        }
+      } catch (err) {
+        showAuthAlert('Errore di rete: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Inizializza e Accedi</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function handleLogout() {
+      if (!confirm('Sei sicuro di voler effettuare il logout da LANWatch?')) return;
+      try {
+        const headers = {};
+        if (sessionToken) headers['Authorization'] = `Bearer ${sessionToken}`;
+        await fetch('/api/auth/logout', { method: 'POST', headers });
+      } catch (e) {}
+
+      sessionToken = null;
+      localStorage.removeItem('lanwatch_session_token');
+      sessionStorage.removeItem('lanwatch_session_token');
+      currentAuthStatus.logged_in = false;
+      showAuthOverlay('login', 'Disconnessione completata con successo.');
+    }
+
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const oldPwd = document.getElementById('input-old-password').value;
+      const newPwd = document.getElementById('input-new-password').value;
+      const confPwd = document.getElementById('input-confirm-password').value;
+      const alertBox = document.getElementById('change-pwd-alert');
+      const alertText = document.getElementById('change-pwd-alert-text');
+      const submitBtn = document.getElementById('btn-change-pwd-submit');
+
+      if (newPwd !== confPwd) {
+        alertBox.className = 'p-3 rounded-xl text-xs font-medium border flex items-center gap-2 bg-rose-500/10 border-rose-500/20 text-rose-500';
+        alertText.textContent = 'Le nuove password non coincidono!';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (sessionToken) headers['Authorization'] = `Bearer ${sessionToken}`;
+        const res = await fetch('/api/auth/change_password', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ old_password: oldPwd, new_password: newPwd }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border flex items-center gap-2 bg-emerald-500/10 border-emerald-500/20 text-emerald-500';
+          alertText.textContent = '✅ ' + (data.message || 'Password aggiornata con successo!');
+          document.getElementById('input-old-password').value = '';
+          document.getElementById('input-new-password').value = '';
+          document.getElementById('input-confirm-password').value = '';
+        } else {
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border flex items-center gap-2 bg-rose-500/10 border-rose-500/20 text-rose-500';
+          alertText.textContent = '❌ ' + (data.detail || 'Errore aggiornamento password.');
+        }
+      } catch (err) {
+        alertBox.className = 'p-3 rounded-xl text-xs font-medium border flex items-center gap-2 bg-rose-500/10 border-rose-500/20 text-rose-500';
+        alertText.textContent = 'Errore di connessione: ' + err.message;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Helper for authenticated requests
+    function authHeaders(extra = {}) {
+      const h = { ...extra };
+      if (sessionToken) {
+        h['Authorization'] = `Bearer ${sessionToken}`;
+      }
+      return h;
+    }
+
     // Web Audio Synthesized Chime
     function playChime(freq = 600, duration = 0.15) {
       if (!audioChimeEnabled) return;
@@ -950,8 +1408,10 @@
 
     // Connect WebSocket
     function setupWebSocket() {
+      if (!currentAuthStatus.logged_in && currentAuthStatus.auth_configured) return;
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const tokenParam = sessionToken ? `?token=${encodeURIComponent(sessionToken)}` : '';
+      const wsUrl = `${protocol}//${window.location.host}/ws${tokenParam}`;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -979,7 +1439,11 @@
         } catch (e) {}
       };
 
-      ws.onclose = () => {
+      ws.onclose = (e) => {
+        if (e.code === 1008) {
+          checkAuthStatus();
+          return;
+        }
         document.getElementById('ws-status-text').textContent = 'Riconnessione...';
         setTimeout(setupWebSocket, 3000);
       };
@@ -1023,7 +1487,11 @@
     async function loadAllData() {
       try {
         // Load Network info
-        const netRes = await fetch('/api/network');
+        const netRes = await fetch('/api/network', { headers: authHeaders() });
+        if (netRes.status === 401) {
+          checkAuthStatus();
+          return;
+        }
         currentNetwork = await netRes.json();
         document.getElementById('header-net-pill').innerHTML = `
           <i data-lucide="network" class="w-3.5 h-3.5 text-emerald-500 inline"></i>
@@ -1034,12 +1502,17 @@
         loadNetworkHealth();
 
         // Load Devices
-        const devRes = await fetch('/api/devices');
+        const devRes = await fetch('/api/devices', { headers: authHeaders() });
+        if (devRes.status === 401) {
+          checkAuthStatus();
+          return;
+        }
         currentDevices = await devRes.json();
         renderDevicesTable();
 
         // Load Assessment
-        const assRes = await fetch('/api/security/assessment');
+        const assRes = await fetch('/api/security/assessment', { headers: authHeaders() });
+        if (assRes.status === 401) return;
         currentAssessment = await assRes.json();
         renderAssessment();
 
@@ -1059,7 +1532,8 @@
 
     async function loadNetworkHealth() {
       try {
-        const hRes = await fetch('/api/network/health');
+        const hRes = await fetch('/api/network/health', { headers: authHeaders() });
+        if (hRes.status === 401) return;
         const h = await hRes.json();
         const gwText = h.gateway_ms !== null ? `${h.gateway_ms.toFixed(1)} ms` : 'offline';
         const netText = h.internet_ms !== null ? `${h.internet_ms.toFixed(1)} ms` : 'offline';
@@ -2459,12 +2933,14 @@
     }
 
     // Startup
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       initTheme();
-      setupWebSocket();
-      loadAllData();
-      // Poll connection health every 30 seconds
-      setInterval(loadNetworkHealth, 30000);
+      const isAuthed = await checkAuthStatus();
+      if (isAuthed) {
+        setupWebSocket();
+        loadAllData();
+        setInterval(loadNetworkHealth, 30000);
+      }
     });
   </script>
 </body>

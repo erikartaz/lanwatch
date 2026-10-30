@@ -11,6 +11,18 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from lanscanner.core.auth import (
+    authenticate,
+    check_rate_limit,
+    create_session,
+    get_admin_username,
+    init_auth_tables,
+    is_auth_configured,
+    is_auth_enabled,
+    revoke_session,
+    set_admin_credentials,
+    validate_session,
+)
 from lanscanner.core.diagnostics import (
     get_network_connection_health,
     measure_ping_latency,
@@ -41,8 +53,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    """Enforce authentication on /api/ routes when auth is configured and enabled."""
+    path = request.url.path
+
+    # Allow static assets and auth management endpoints
+    if (
+        not path.startswith("/api/")
+        or path.startswith("/api/auth/")
+        or not is_auth_enabled()
+        or not is_auth_configured()
+    ):
+        return await call_next(request)
+
+    # Extract session token
+    token = None
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        token = request.cookies.get("lanwatch_session")
+    if not token:
+        token = request.query_params.get("token")
+
+    username = validate_session(token)
+    if not username:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Sessione non valida o scaduta. Effettua l'accesso."}
+        )
+
+    request.state.user = username
+    return await call_next(request)
+
+
 STATIC_DIR = Path(__file__).parent.parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+    remember_me: bool = False
+
+
+class SetupRequest(BaseModel):
+    username: str = "admin"
+    password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
 
 
 class DeviceUpdateRequest(BaseModel):
@@ -147,7 +211,131 @@ async def background_auto_scanner():
 @app.on_event("startup")
 async def startup_event():
     init_db()
+    init_auth_tables()
     asyncio.create_task(background_auto_scanner())
+
+
+# --- AUTHENTICATION & ACCESS CONTROL ENDPOINTS ---
+
+@app.get("/api/auth/status")
+async def auth_status(request: Request):
+    """Return whether authentication is configured, enabled, and if current session is valid."""
+    configured = is_auth_configured()
+    enabled = is_auth_enabled()
+
+    token = None
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        token = request.cookies.get("lanwatch_session")
+    if not token:
+        token = request.query_params.get("token")
+
+    user = validate_session(token) if (configured and enabled) else None
+
+    return {
+        "auth_configured": configured,
+        "auth_enabled": enabled,
+        "logged_in": bool(user) if (configured and enabled) else True,
+        "username": user or (get_admin_username() if configured else "admin"),
+    }
+
+
+@app.post("/api/auth/setup")
+async def auth_setup(req: SetupRequest):
+    """Initial administrator account creation."""
+    if is_auth_configured():
+        raise HTTPException(status_code=400, detail="L'amministratore è già stato configurato.")
+
+    if len(req.password.strip()) < 6:
+        raise HTTPException(status_code=400, detail="La password deve contenere almeno 6 caratteri.")
+
+    username = req.username.strip() or "admin"
+    set_admin_credentials(username, req.password)
+    token = create_session(username, remember_me=True)
+
+    response = JSONResponse(content={
+        "status": "success",
+        "username": username,
+        "token": token,
+        "message": "Amministratore configurato con successo!"
+    })
+    response.set_cookie(
+        key="lanwatch_session",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=30 * 86400,
+    )
+    return response
+
+
+@app.post("/api/auth/login")
+async def auth_login(req: LoginRequest, request: Request):
+    """Authenticate and issue a session token."""
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        client_ip = x_forwarded_for.split(",")[0].strip()
+
+    success, err_msg, username = authenticate(req.username, req.password, client_ip)
+    if not success:
+        raise HTTPException(status_code=401, detail=err_msg)
+
+    token = create_session(username, remember_me=req.remember_me)
+    max_age = (30 * 86400) if req.remember_me else (24 * 3600)
+
+    response = JSONResponse(content={
+        "status": "success",
+        "username": username,
+        "token": token,
+        "message": f"Benvenuto, {username}!"
+    })
+    response.set_cookie(
+        key="lanwatch_session",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=max_age,
+    )
+    return response
+
+
+@app.post("/api/auth/logout")
+async def auth_logout(request: Request):
+    """Revoke session token and clear cookies."""
+    token = request.cookies.get("lanwatch_session")
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+
+    if token:
+        revoke_session(token)
+
+    response = JSONResponse(content={"status": "success", "message": "Disconnesso con successo."})
+    response.delete_cookie("lanwatch_session")
+    return response
+
+
+@app.post("/api/auth/change_password")
+async def auth_change_password(req: ChangePasswordRequest, request: Request):
+    """Change the administrator password."""
+    user = getattr(request.state, "user", None) or get_admin_username()
+    client_ip = request.client.host if request.client else "127.0.0.1"
+
+    success, err_msg, _ = authenticate(user, req.old_password, client_ip)
+    if not success:
+        raise HTTPException(status_code=400, detail="Vecchia password non corretta.")
+
+    if len(req.new_password.strip()) < 6:
+        raise HTTPException(status_code=400, detail="La nuova password deve contenere almeno 6 caratteri.")
+
+    set_admin_credentials(user, req.new_password)
+    return {"status": "success", "message": "Password aggiornata con successo!"}
+
+
+# --- NETWORK & DEVICE ENDPOINTS ---
 
 
 @app.get("/api/network")
@@ -471,6 +659,12 @@ async def restore_database(request: Request):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """Real-time websocket channel for scan progress and notifications."""
+    if is_auth_enabled() and is_auth_configured():
+        token = websocket.query_params.get("token") or websocket.cookies.get("lanwatch_session")
+        if not validate_session(token):
+            await websocket.close(code=1008, reason="Unauthorized")
+            return
+
     await ws_manager.connect(websocket)
     try:
         while True:
