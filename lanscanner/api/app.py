@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -408,6 +408,54 @@ async def export_json_report():
         content=report_data,
         headers={"Content-Disposition": 'attachment; filename="lan_security_audit.json"'},
     )
+
+
+@app.get("/api/database/backup")
+async def backup_database():
+    """Download current SQLite database file."""
+    from lanscanner.core.storage import DB_PATH
+    if not DB_PATH.exists():
+        raise HTTPException(status_code=404, detail="Database non trovato")
+    return FileResponse(
+        path=str(DB_PATH),
+        filename="lanscanner.db",
+        media_type="application/x-sqlite3"
+    )
+
+
+@app.post("/api/database/restore")
+async def restore_database(file: UploadFile = File(...)):
+    """Upload and restore a SQLite database file."""
+    import shutil
+    import sqlite3
+    from lanscanner.core.storage import DB_PATH
+
+    temp_path = DB_PATH.with_suffix(".upload_tmp")
+    try:
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Verify it is a valid SQLite DB with the devices table
+        test_conn = sqlite3.connect(temp_path)
+        test_cur = test_conn.cursor()
+        test_cur.execute("SELECT count(*) FROM devices")
+        count = test_cur.fetchone()[0]
+        test_conn.close()
+
+        # Atomic replace
+        if DB_PATH.exists():
+            backup_old = DB_PATH.with_suffix(".bak")
+            shutil.copy2(DB_PATH, backup_old)
+        shutil.move(temp_path, DB_PATH)
+
+        return {"status": "success", "message": f"Database ripristinato con successo! ({count} dispositivi caricati)"}
+    except Exception as e:
+        if temp_path.exists():
+            try:
+                temp_path.unlink()
+            except Exception:
+                pass
+        raise HTTPException(status_code=400, detail=f"File database non valido: {e}")
 
 
 @app.websocket("/ws")

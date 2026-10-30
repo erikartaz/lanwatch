@@ -641,6 +641,54 @@
           </button>
         </div>
       </div>
+
+      <!-- Backup & Restore Database Card -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5 shadow-sm max-w-4xl mx-auto">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-2xl">
+              💾
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                Gestione Database & Backup (Ripristino Personalizzazioni)
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Esporta o importa il file SQLite (<code>lanscanner.db</code>) con tutti i 26 nomi personalizzati, ruoli e storico</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <!-- Download Backup -->
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-3 flex flex-col justify-between">
+            <div>
+              <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mb-1 text-sm">
+                <i data-lucide="download" class="w-4 h-4 text-emerald-500"></i> Esporta Backup Database
+              </div>
+              <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">Scarica una copia esatta del file <code>lanscanner.db</code> contenente l'intero inventario, le note e le personalizzazioni.</p>
+            </div>
+            <button onclick="window.open('/api/database/backup', '_blank')" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors shadow-sm">
+              <i data-lucide="download" class="w-4 h-4"></i> Scarica Backup (.db)
+            </button>
+          </div>
+
+          <!-- Restore / Import -->
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-3 flex flex-col justify-between">
+            <div>
+              <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mb-1 text-sm">
+                <i data-lucide="upload" class="w-4 h-4 text-amber-500"></i> Ripristina / Importa Database
+              </div>
+              <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">Carica il tuo file <code>lanscanner.db</code> salvato sul PC per ripristinare istantaneamente tutti i nomi e le categorie.</p>
+            </div>
+            <div>
+              <input type="file" id="input-restore-db" accept=".db,.sqlite,.sqlite3" class="hidden" onchange="handleRestoreDatabase(event)">
+              <button onclick="document.getElementById('input-restore-db').click()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors shadow-sm">
+                <i data-lucide="upload" class="w-4 h-4"></i> Seleziona e Ripristina Database
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -2372,6 +2420,37 @@
         alert('Errore di connessione: ' + e.message);
       } finally {
         if (btnText) btnText.textContent = origText;
+      }
+    }
+
+    async function handleRestoreDatabase(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!confirm(`Sei sicuro di voler importare il database "${file.name}"?\n\nTutte le personalizzazioni e l'inventario attuale verranno sostituiti con quelli del file caricato.`)) {
+        event.target.value = '';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/database/restore', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await res.json();
+        if (res.ok) {
+          alert('✅ ' + (result.message || 'Database ripristinato con successo!'));
+          window.location.reload();
+        } else {
+          alert('❌ Errore durante il ripristino: ' + (result.detail || 'File non valido'));
+        }
+      } catch (err) {
+        alert('❌ Errore di connessione durante il caricamento del database: ' + err.message);
+      } finally {
+        event.target.value = '';
       }
     }
 
