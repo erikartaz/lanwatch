@@ -3,7 +3,8 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DATA_DIR=/data
+    DATA_DIR=/data \
+    PORT=8088
 
 # Install system utilities needed for network scanning (ping, arp)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,8 +26,8 @@ COPY main.py .
 # Persistent storage for SQLite database (lanscanner.db)
 VOLUME /data
 
-# Expose web application port
-EXPOSE 8000
+# Expose web application port (8088 evita confliti con la porta 8000 di Portainer Edge Agent)
+EXPOSE 8088
 
 # Launch FastAPI web application
-CMD ["uvicorn", "lanscanner.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn lanscanner.api.app:app --host 0.0.0.0 --port ${PORT:-8088}"]

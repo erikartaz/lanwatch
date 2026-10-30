@@ -12,6 +12,7 @@ services:
     # ascoltando i pacchetti multicast mDNS/SSDP e raggiungendo le porte della LAN 192.168.1.0/24).
     network_mode: host
     environment:
+      - PORT=8088
       - DATA_DIR=/data
       - TZ=Europe/Rome
     volumes:
