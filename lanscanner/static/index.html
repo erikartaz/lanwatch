@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LANWatch - Home LAN Sentinel & Security Assessment</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Vis.js Network for Interactive Topology Graph -->
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .bg-slate-900, .bg-slate-950, .bg-slate-800, .bg-white { background: white !important; border: 1px solid #cbd5e1 !important; color: black !important; }
+      .text-white, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-800 { color: #0f172a !important; }
+    }
+    #topology-network {
+      width: 100%;
+      height: 600px;
+      outline: none;
+    }
+
+    /* Modern Glassmorphic Tooltip for Vis.js Topology Graph */
+    div.vis-tooltip {
+      position: absolute;
+      visibility: hidden;
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 12px !important;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+      pointer-events: none;
+      z-index: 99999 !important;
+      font-family: inherit !important;
+      max-width: 320px;
+      white-space: normal !important;
+    }
+
+    .topology-tooltip-card {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.85);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #f8fafc;
+      font-size: 12px;
+      line-height: 1.45;
+      min-width: 250px;
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    }
+
+    html:not(.dark) div.vis-tooltip .topology-tooltip-card {
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15) !important;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col font-sans antialiased bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 selection:bg-emerald-500 selection:text-white transition-colors duration-200">
+
+  <!-- Header -->
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-40 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">LANWatch</span>
+            <span class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Sentinel Pro</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <span id="header-net-pill" class="flex items-center gap-1 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+              <i data-lucide="network" class="w-3 h-3 text-emerald-500"></i> Rilevamento rete...
+            </span>
+            <!-- Live Gateway & Internet Health Pill -->
+            <span id="header-health-pill" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="health-text" class="text-slate-600 dark:text-slate-300">GW: -- ms • Net: -- ms</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center gap-2 sm:gap-2.5 no-print">
+        <!-- Audio Chime Toggle -->
+        <button id="btn-audio-toggle" onclick="toggleAudioChime()" class="flex items-center p-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Attiva/Disattiva avvisi sonori">
+          <i data-lucide="bell" class="w-3.5 h-3.5" id="audio-icon"></i>
+        </button>
+
+        <!-- Settings Button -->
+        <button onclick="switchTab('settings')" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Impostazioni & Notifiche Telegram">
+          <i data-lucide="settings" class="w-3.5 h-3.5 text-sky-500"></i> <span class="hidden md:inline">Impostazioni</span>
+        </button>
+
+        <!-- Theme Toggle Button -->
+        <button id="btn-theme-toggle" onclick="toggleTheme()" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Cambia tema chiaro/scuro">
+          <i data-lucide="sun" class="w-3.5 h-3.5 hidden dark:inline text-amber-400" id="theme-icon-sun"></i>
+          <i data-lucide="moon" class="w-3.5 h-3.5 inline dark:hidden text-slate-600" id="theme-icon-moon"></i>
+          <span id="theme-btn-text" class="hidden md:inline">Tema</span>
+        </button>
+
+        <div id="ws-indicator" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="ws-status-text">Live</span>
+        </div>
+
+        <div id="header-autoscan-pill" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60" title="Scansione periodica continua in background">
+          <i data-lucide="timer" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span id="header-autoscan-text">Auto: 5m</span>
+        </div>
+
+        <button id="btn-export-json" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Export</span> JSON
+        </button>
+
+        <button onclick="window.print()" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Stampa</span>
+        </button>
+
+        <button id="btn-start-scan" class="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-lg shadow-emerald-600/25 transition-all">
+          <i data-lucide="radar" class="w-4 h-4" id="scan-icon"></i>
+          <span id="scan-btn-text">Scansione Passiva</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scan Progress Bar -->
+    <div id="scan-progress-container" class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 overflow-hidden hidden">
+      <div id="scan-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 w-0"></div>
+    </div>
+    <div id="scan-status-banner" class="bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-500/20 px-4 py-1.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between hidden">
+      <div class="flex items-center gap-2">
+        <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400"></i>
+        <span id="scan-status-message">Scansione in corso...</span>
+      </div>
+      <span id="scan-percent" class="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">0%</span>
+    </div>
+  </header>
+
+  <!-- Sentinel Untrusted Alert Banner -->
+  <div id="untrusted-alert-banner" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mt-4 hidden">
+    <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-medium">
+        <i data-lucide="shield-alert" class="w-4 h-4 flex-shrink-0"></i>
+        <span><strong>Sentinella Wi-Fi:</strong> Rilevati <span id="untrusted-count" class="font-bold">0</span> dispositivi non ancora verificati o autorizzati sulla rete locale.</span>
+      </div>
+      <button onclick="filterUntrustedOnly()" class="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded-lg transition-colors font-semibold">
+        Ispeziona Non Verificati
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+    <!-- Top KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Devices -->
+      <div onclick="switchTab('inventory')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-blue-500/60 dark:hover:border-blue-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire l'Inventario Tecnico">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors">Dispositivi Attivi</span>
+          <div class="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
+            <i data-lucide="devices" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpi-total-devices" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">--</span>
+          <span class="text-xs text-emerald-600 dark:text-emerald-400 flex items-center">
+            <i data-lucide="wifi" class="w-3 h-3 mr-0.5"></i> online
+          </span>
+        </div>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="kpi-devices-subtitle">Inventario LAN sincronizzato</p>
+      </div>
+
+      <!-- Security Health Score -->
+      <div onclick="switchTab('security')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-emerald-500/60 dark:hover:border-emerald-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire il Security Assessment Passivo">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-emerald-500 transition-colors">Posture Sicurezza LAN</span>
+          <div id="kpi-score-icon-box" class="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpi-security-score" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">--</span>
+          <span class="text-xs text-slate-400 font-mono">/ 100</span>
+          <span id="kpi-grade-badge" class="ml-auto px-2 py-0.5 text-xs font-bold rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Grado A</span>
+        </div>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="kpi-score-label">Valutazione passiva della rete</p>
+      </div>
+
+      <!-- Vulnerabilities Count -->
+      <div onclick="switchTab('security')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-amber-500/60 dark:hover:border-amber-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire il Security Assessment Passivo">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-amber-500 transition-colors">Rilievi di Sicurezza</span>
+          <div class="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-all">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpi-findings-total" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">0</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">anomalie passive</span>
+        </div>
+        <div class="mt-2 flex items-center gap-1.5 text-[11px]" id="kpi-findings-badges">
+          <span class="px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">0 Critici</span>
+          <span class="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">0 Alti</span>
+          <span class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">0 Medi</span>
+        </div>
+      </div>
+
+      <!-- Presence & Family / Smart Home Tracker -->
+      <div onclick="switchTab('events')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-purple-500/60 dark:hover:border-purple-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire Log & Presenze">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-purple-500 transition-colors">Presenza & Smart Home</span>
+          <div class="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span id="kpi-presence-count" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">--</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">mobile a casa</span>
+        </div>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="kpi-presence-subtitle"><span id="kpi-iot-badge">--</span> device IoT attivi</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-slate-200 dark:border-slate-800 space-x-4 sm:space-x-6 text-sm font-medium overflow-x-auto no-print">
+      <button id="tab-btn-inventory" onclick="switchTab('inventory')" class="pb-3 border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+        <i data-lucide="list" class="w-4 h-4"></i> Inventario Tecnico
+        <span id="tab-badge-inventory" class="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full font-mono">0</span>
+      </button>
+      <button id="tab-btn-topology" onclick="switchTab('topology')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
+        <i data-lucide="git-fork" class="w-4 h-4 text-blue-500"></i> Mappa Topologica
+      </button>
+      <button id="tab-btn-security" onclick="switchTab('security')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
+        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i> Security Assessment Passivo
+        <span id="tab-badge-security" class="text-xs bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono">0</span>
+      </button>
+      <button id="tab-btn-analytics" onclick="switchTab('analytics')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
+        <i data-lucide="pie-chart" class="w-4 h-4"></i> Statistiche & OUI
+      </button>
+      <button id="tab-btn-events" onclick="switchTab('events')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
+        <i data-lucide="activity" class="w-4 h-4"></i> Log & Presenze
+      </button>
+    </div>
+
+    <!-- TAB 1: INVENTARIO TECNICO -->
+    <div id="tab-content-inventory" class="space-y-4">
+      <!-- Search & Filters Toolbar -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm no-print">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+          <input type="text" id="filter-search" placeholder="Cerca per IP, MAC, Hostname, Produttore o Applicazione..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500">
+        </div>
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <select id="filter-category" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500">
+            <option value="">Tutte le Categorie</option>
+            <option value="Router / Gateway">Router / Gateway</option>
+            <option value="Virtualizzazione / Server">Virtualizzazione (Proxmox/PVE)</option>
+            <option value="NVR / Videosorveglianza">NVR / Videosorveglianza</option>
+            <option value="Server / Container Web">Server / Container Web</option>
+            <option value="Macchina Virtuale / Container">Macchine Virtuali (VM)</option>
+            <option value="Server / Homelab">Server & Homelab</option>
+            <option value="Dispositivo Mobile (Smartphone/Tablet)">Smartphone / Tablet</option>
+            <option value="Assistente Vocale / Smart Speaker">Smart Speaker / Alexa</option>
+            <option value="IoT / Smart Home">IoT & Smart Home (Tuya/ESP)</option>
+            <option value="Stampante di Rete">Stampanti di Rete</option>
+            <option value="Computer / PC Desktop">Computer / PC</option>
+          </select>
+
+          <select id="filter-trust" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500">
+            <option value="">Tutti i Dispositivi</option>
+            <option value="trusted">Solo Fidati ✓</option>
+            <option value="untrusted">Da Verificare ⚠️</option>
+          </select>
+
+          <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-800 cursor-pointer select-none whitespace-nowrap hover:border-emerald-500/50 transition-colors">
+            <input type="checkbox" id="filter-online" class="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-emerald-500 focus:ring-0">
+            Solo Online
+          </label>
+          <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-800 cursor-pointer select-none whitespace-nowrap hover:border-slate-400 transition-colors">
+            <input type="checkbox" id="filter-offline" class="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-500 focus:ring-0">
+            Solo Offline
+          </label>
+        </div>
+      </div>
+
+      <!-- Devices Grid / Table Container -->
+      <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+            <thead class="bg-slate-100 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800 text-[11px]">
+              <tr>
+                <th onclick="sortDevices('name')" class="py-3 px-4 cursor-pointer hover:text-emerald-500 transition-colors select-none">
+                  Dispositivo & Identità <span id="sort-name" class="text-[10px] opacity-75">▲</span>
+                </th>
+                <th onclick="sortDevices('ip')" class="py-3 px-4 cursor-pointer hover:text-emerald-500 transition-colors select-none">
+                  Indirizzo IP <span id="sort-ip" class="text-[10px] text-emerald-500 font-bold">▲</span>
+                </th>
+                <th class="py-3 px-4">MAC & Produttore (OUI)</th>
+                <th onclick="sortDevices('category')" class="py-3 px-4 cursor-pointer hover:text-emerald-500 transition-colors select-none">
+                  Categoria & Sistema <span id="sort-category" class="text-[10px] opacity-75">▲</span>
+                </th>
+                <th class="py-3 px-4">Servizi & Accesso Rapido</th>
+                <th onclick="sortDevices('score')" class="py-3 px-4 text-center cursor-pointer hover:text-emerald-500 transition-colors select-none">
+                  Score <span id="sort-score" class="text-[10px] opacity-75">▲</span>
+                </th>
+                <th class="py-3 px-4 text-right no-print">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="devices-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-normal">
+              <tr>
+                <td colspan="7" class="py-8 text-center text-slate-400">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <i data-lucide="loader" class="w-6 h-6 animate-spin text-emerald-500"></i>
+                    <span>Caricamento inventario dispositivi in corso...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MAPPA TOPOLOGICA INTERATTIVA -->
+    <div id="tab-content-topology" class="space-y-4 hidden">
+      <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="git-fork" class="w-4 h-4 text-blue-500"></i> Mappa Topologica Interattiva della Rete
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Visualizzazione a grafo delle connessioni LAN. Puoi trascinare i nodi, ingrandire con la rotellina e cliccare su un nodo per aprire i dettagli.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="resetTopologyPhysics()" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Centra Vista
+            </button>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 dark:text-slate-400 border-t border-b border-slate-200 dark:border-slate-800/80 py-2">
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Gateway / Router</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Proxmox Hypervisor (PVE)</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-teal-500"></span> VM & Container (vSwitch)</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Smart Home / IoT</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-400"></span> Mobile / Tablet</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> PC Desktop / Laptop</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-500"></span> Stampanti & Media</div>
+        </div>
+
+        <!-- Topology Canvas Container -->
+        <div id="topology-network" class="rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/50 dark:bg-slate-950/60 overflow-hidden"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SECURITY ASSESSMENT PASSIVO -->
+    <div id="tab-content-security" class="space-y-6 hidden">
+      <!-- Executive Summary & Radar Chart -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Summary Text -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">Metodologia Passiva</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400">Zero pacchetti offensivi • Zero Denial of Service</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Posture di Sicurezza Globale della Rete</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            L'assessment valuta l'esposizione al rischio basandosi esclusivamente sui dati annunciati spontaneamente dai dispositivi (annunci mDNS, SSDP UPnP, NetBIOS, tabella ARP locale, titoli HTTP e certificati TLS).
+          </p>
+
+          <div class="flex items-center gap-5 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div class="text-center">
+              <span class="block text-3xl font-black text-emerald-600 dark:text-emerald-400" id="assessment-card-score">--</span>
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Punteggio</span>
+            </div>
+            <div class="h-10 w-px bg-slate-200 dark:bg-slate-800"></div>
+            <div class="text-left">
+              <span class="block text-sm font-bold text-slate-800 dark:text-slate-200" id="assessment-card-health">In analisi...</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400" id="assessment-card-findings-text">0 anomalie rilevate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Axis Cybersecurity Radar Chart -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <i data-lucide="radar" class="w-4 h-4 text-emerald-500"></i> Radar Pilastri di Sicurezza
+          </h4>
+          <div class="h-56 flex items-center justify-center">
+            <canvas id="chart-security-radar"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Findings List -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i> Rilievi & Vulnerabilità Identificate
+          </h4>
+          <span class="text-xs text-slate-500 dark:text-slate-400" id="findings-count-label">-- anomalie</span>
+        </div>
+
+        <div id="findings-container" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Hardening Checklist for Home Users -->
+      <div class="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-sm">
+        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i> Best Practice & Guida Hardening per la Rete di Casa
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800/80 space-y-1">
+            <div class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="router" class="w-3.5 h-3.5 text-blue-500"></i> 1. Disattiva UPnP sul Router
+            </div>
+            <p class="text-slate-600 dark:text-slate-400">Disabilita UPnP o l'apertura automatica delle porte nel pannello del router (Vodafone Station, Fritz!Box, TIM). Evita che device compromessi aprano porte verso l'esterno senza autorizzazione.</p>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800/80 space-y-1">
+            <div class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="wifi" class="w-3.5 h-3.5 text-purple-500"></i> 2. Isola i Dispositivi IoT (Wi-Fi Guest)
+            </div>
+            <p class="text-slate-600 dark:text-slate-400">Attiva la "Rete Wi-Fi Ospiti" con isolamento client e connettici prese smart, lampadine, smart speaker e telecamere. In questo modo non potranno accedere ai tuoi PC o al NAS.</p>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800/80 space-y-1">
+            <div class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-500"></i> 3. Forza HTTPS sulle Interfacce Web
+            </div>
+            <p class="text-slate-600 dark:text-slate-400">Abilita sempre l'accesso crittografato HTTPS sui pannelli del router, NAS o hypervisor Proxmox per evitare che le password viaggino in chiaro sulla LAN.</p>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800/80 space-y-1">
+            <div class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-500"></i> 4. Disabilita NetBIOS / LLMNR
+            </div>
+            <p class="text-slate-600 dark:text-slate-400">Su PC Windows disabilita NetBIOS su TCP/IP nelle impostazioni WINS della scheda di rete per proteggerti da attacchi di furto credenziali (Responder/LLMNR Poisoning).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ANALYTICS & STATISTICHE OUI -->
+    <div id="tab-content-analytics" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Category Distribution Chart -->
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-500"></i> Distribuzione per Categoria
+          </h4>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-categories"></canvas>
+          </div>
+        </div>
+
+        <!-- Vendor Distribution Chart -->
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i> Top Produttori Hardware (OUI)
+          </h4>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-vendors"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: EVENT LOGS & PRESENZE -->
+    <div id="tab-content-events" class="space-y-4 hidden">
+      <!-- Presence List -->
+      <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3">
+        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <i data-lucide="users" class="w-4 h-4 text-purple-500"></i> Monitoraggio Presenze Smartphone & Famiglia
+        </h4>
+        <div id="presence-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Events Log -->
+      <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4 text-emerald-500"></i> Registro Eventi e Connessioni Recenti
+        </h4>
+        <div id="events-list-container" class="space-y-2">
+          <p class="text-xs text-slate-500">Nessun evento registrato.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: IMPOSTAZIONI & NOTIFICHE TELEGRAM -->
+    <div id="tab-content-settings" class="space-y-6 hidden">
+      <!-- Continuous Background Auto-Scan Configuration Card -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5 shadow-sm max-w-4xl mx-auto">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-2xl">
+              ⏱️
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                Scansione Automatica Periodica (Background Sentinel)
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Scansiona automaticamente la subnet a intervalli regolari per rilevare all'istante nuovi dispositivi, apparizioni o variazioni di stato</p>
+            </div>
+          </div>
+          <span id="autoscan-status-pill" class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+            Attiva (Ogni 5 min)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Intervallo di Scansione Automatica</label>
+            <select id="select-autoscan-interval" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium">
+              <option value="2">Ogni 2 Minuti (Molto frequente)</option>
+              <option value="5" selected>Ogni 5 Minuti (Raccomandato)</option>
+              <option value="10">Ogni 10 Minuti</option>
+              <option value="15">Ogni 15 Minuti</option>
+              <option value="30">Ogni 30 Minuti</option>
+            </select>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Frequenza con cui la sentinella interroga la tabella ARP e i servizi di rete</p>
+          </div>
+          <div class="flex flex-col justify-center bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mb-1">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i> Funzionamento in background
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              La scansione viene eseguita in modalità passiva non invasiva. Se viene rilevato un nuovo dispositivo, viene inserito nell'inventario, inviata una notifica su Telegram e aggiornata la dashboard in tempo reale.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <label class="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+            <input type="checkbox" id="checkbox-autoscan-enabled" class="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-emerald-500 focus:ring-0" checked>
+            <span class="font-medium">Abilita scansione automatica continua</span>
+          </label>
+
+          <button id="btn-save-autoscan" onclick="saveAutoScanSettings()" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all shadow-md shadow-emerald-600/20">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span id="btn-save-autoscan-text">Salva Impostazioni Scansione</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Telegram Real-Time Notifications Configuration Card -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5 shadow-sm max-w-4xl mx-auto">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center font-bold text-2xl">
+              ✈️
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                Notifiche Automatiche Telegram (LAN Sentinel)
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Ricevi un messaggio sul tuo Telegram ogni volta che un nuovo dispositivo si connette o vengono rilevati rischi critici</p>
+            </div>
+          </div>
+          <span id="telegram-status-pill" class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
+            Non Configurato
+          </span>
+        </div>
+
+        <!-- Guida rapida 2 step -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-sky-50/60 dark:bg-sky-950/20 p-4 rounded-xl border border-sky-200/50 dark:border-sky-800/40">
+          <div class="space-y-1">
+            <span class="font-bold text-sky-800 dark:text-sky-300 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[10px]">1</span>
+              Crea il tuo Bot con @BotFather
+            </span>
+            <p class="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+              Apri Telegram, cerca <strong>@BotFather</strong>, invia <code>/newbot</code> e segui i passaggi. Al termine copia il <strong>Token HTTP API</strong> generato.
+            </p>
+          </div>
+          <div class="space-y-1">
+            <span class="font-bold text-sky-800 dark:text-sky-300 flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[10px]">2</span>
+              Ottieni il tuo Chat ID
+            </span>
+            <p class="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+              Cerca <strong>@userinfobot</strong> su Telegram e premi Avvia: ti restituirà il tuo <strong>Id</strong> numerico. Ricordati poi di premere <strong>Avvia</strong> anche nella chat del tuo nuovo Bot!
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Telegram Bot Token</label>
+            <input type="password" id="input-telegram-token" placeholder="Es. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono shadow-xs">
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Il token segreto del bot Telegram</p>
+          </div>
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Chat ID Telegram</label>
+            <input type="text" id="input-telegram-chatid" placeholder="Es. 987654321" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-mono shadow-xs">
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Il tuo ID personale o quello di un gruppo/canale</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <label class="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+            <input type="checkbox" id="checkbox-telegram-enabled" class="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-sky-500 focus:ring-0" checked>
+            <span class="font-medium">Abilita invio notifiche automatiche</span>
+          </label>
+
+          <button id="btn-save-telegram" onclick="saveTelegramSettings()" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-lg transition-all shadow-md shadow-sky-600/20">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span id="btn-save-telegram-text">Salva & Invia Notifica di Prova</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Device Detail Modal Drawer -->
+  <div id="device-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl text-slate-800 dark:text-slate-100">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div id="modal-device-icon" class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <i data-lucide="server" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="modal-device-title" class="text-base font-bold text-slate-900 dark:text-white">Dettaglio Dispositivo</h3>
+              <span id="modal-trust-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"></span>
+            </div>
+            <p id="modal-device-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-mono">192.168.1.X • MAC</p>
+          </div>
+        </div>
+        <button onclick="closeDeviceModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Quick Actions Toolbar (WoL, Ping, Web UI, Trust) -->
+      <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <!-- Web UI button -->
+          <a id="modal-btn-webui" href="#" target="_blank" class="px-3 py-1.5 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 hidden">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i> <span id="modal-webui-label">Apri Web UI</span>
+          </a>
+
+          <!-- Ping Test button -->
+          <button id="modal-btn-ping" onclick="pingCurrentDevice()" class="px-3 py-1.5 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5">
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span id="modal-ping-label">Test Ping</span>
+          </button>
+
+          <!-- Wake-on-LAN button -->
+          <button id="modal-btn-wol" onclick="wakeCurrentDevice()" class="px-3 py-1.5 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5" title="Invia Magic Packet Wake-on-LAN">
+            <i data-lucide="power" class="w-3.5 h-3.5 text-amber-500"></i> WoL
+          </button>
+        </div>
+
+        <!-- Trust Toggle Switch -->
+        <button id="modal-btn-trust-toggle" onclick="toggleCurrentDeviceTrust()" class="px-3 py-1.5 font-medium rounded-lg border transition-all flex items-center gap-1.5">
+          <i data-lucide="shield" class="w-3.5 h-3.5"></i> <span id="modal-trust-toggle-text">Segna come Fidato</span>
+        </button>
+      </div>
+
+      <!-- Quick Technical Specs Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Indirizzo IP</span>
+          <span id="modal-spec-ip" class="font-mono font-semibold text-slate-900 dark:text-slate-200">--</span>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Indirizzo MAC</span>
+          <span id="modal-spec-mac" class="font-mono font-semibold text-slate-900 dark:text-slate-200">--</span>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Produttore (OUI)</span>
+          <span id="modal-spec-vendor" class="font-semibold text-slate-900 dark:text-slate-200 truncate block">--</span>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Hostname / Identità</span>
+          <span id="modal-spec-hostname" class="font-semibold text-slate-900 dark:text-slate-200 truncate block">--</span>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Sistema / OS Stimato</span>
+          <span id="modal-spec-os" class="font-semibold text-slate-900 dark:text-slate-200 truncate block">--</span>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Punteggio Sicurezza</span>
+          <span id="modal-spec-score" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">100 / 100</span>
+        </div>
+      </div>
+
+      <!-- Services & Ports -->
+      <div>
+        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Servizi di Rete & Titoli Web Rilevati</h4>
+        <div id="modal-services-container" class="flex flex-wrap gap-2 text-xs">
+          <span class="text-slate-500 text-xs">Nessun servizio standard annunciato.</span>
+        </div>
+      </div>
+
+      <!-- UPnP & NetBIOS Discovery Details -->
+      <div id="modal-extra-meta-box" class="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 hidden">
+        <h4 class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+          <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i> Metadati Passivi UPnP / NetBIOS
+        </h4>
+        <div id="modal-extra-meta-content" class="text-slate-600 dark:text-slate-400 space-y-1 font-mono text-[11px]"></div>
+      </div>
+
+      <!-- Device Presence & Activity History -->
+      <div class="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-500"></i> Storico Attività & Presenza (24h)
+          </h4>
+          <span id="modal-history-status" class="text-[10px] text-slate-400 font-mono">--</span>
+        </div>
+        <div id="modal-history-container" class="max-h-32 overflow-y-auto space-y-1 pr-1 font-mono text-[11px] bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+          <div class="text-slate-400 text-xs py-1">Caricamento eventi...</div>
+        </div>
+      </div>
+
+      <!-- Edit Form (Custom Name, Category, Notes) -->
+      <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
+        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Personalizzazione Scheda</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[11px] text-slate-500 dark:text-slate-400">Nome Personalizzato (Alias)</label>
+              <button type="button" onclick="resetToScannedName()" class="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline">
+                Ripristina nome scansione
+              </button>
+            </div>
+            <input type="text" id="modal-input-name" placeholder="Es. Server Proxmox PVE, Telecamera Ingresso..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Lascia vuoto per mostrare il nome della scansione: <span id="modal-hint-hostname" class="font-semibold text-slate-700 dark:text-slate-300"></span></p>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Categoria Dispositivo</label>
+            <select id="modal-input-category" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+              <option value="Router / Gateway">Router / Gateway</option>
+              <option value="Virtualizzazione / Server">Virtualizzazione / Server</option>
+              <option value="NVR / Videosorveglianza">NVR / Videosorveglianza</option>
+              <option value="Server / Container Web">Server / Container Web</option>
+              <option value="Macchina Virtuale / Container">Macchina Virtuale / Container</option>
+              <option value="Server / Homelab">Server / Homelab</option>
+              <option value="Computer / PC Desktop">Computer / PC Desktop</option>
+              <option value="Computer / Laptop">Computer / Laptop</option>
+              <option value="Dispositivo Mobile (Smartphone/Tablet)">Smartphone / Tablet</option>
+              <option value="Assistente Vocale / Smart Speaker">Assistente Vocale / Smart Speaker</option>
+              <option value="IoT / Smart Home">IoT / Smart Home</option>
+              <option value="Telecamera IP / Videosorveglianza">Telecamera IP</option>
+              <option value="Smart TV / Media Player">Smart TV / Media</option>
+              <option value="Stampante di Rete">Stampante di Rete</option>
+              <option value="Altro">Altro</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Nodo Superiore (Mappa Topologica)</label>
+            <select id="modal-input-parent" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+              <option value="auto">Automatico (Rilevamento Router / Proxmox)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Note Tecniche o Posizione</label>
+            <input type="text" id="modal-input-notes" placeholder="Es. Porta LAN dello switch, IP statico, servizi ospitati..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeDeviceModal()" class="px-4 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors">Annulla</button>
+        <button onclick="saveDeviceCustomization()" class="px-4 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> Salva Modifiche
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950/90 py-4 text-center text-xs text-slate-500 no-print transition-colors">
+    LANWatch Sentinel Pro • Monitoraggio Passivo, Mappa Topologica & Control Room LAN
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    let currentDevices = [];
+    let currentAssessment = null;
+    let currentNetwork = null;
+    let selectedDeviceMac = null;
+    let selectedDeviceObj = null;
+    let categoryChart = null;
+    let vendorChart = null;
+    let radarChart = null;
+    let topologyNetwork = null;
+    let audioChimeEnabled = false;
+    let sortColumn = 'ip';
+    let sortDirection = 1; // 1 = asc, -1 = desc
+
+    // Web Audio Synthesized Chime
+    function playChime(freq = 600, duration = 0.15) {
+      if (!audioChimeEnabled) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function toggleAudioChime() {
+      audioChimeEnabled = !audioChimeEnabled;
+      const btn = document.getElementById('btn-audio-toggle');
+      if (audioChimeEnabled) {
+        btn.classList.add('bg-emerald-500/20', 'text-emerald-500', 'border-emerald-500/40');
+        playChime(800, 0.1);
+      } else {
+        btn.classList.remove('bg-emerald-500/20', 'text-emerald-500', 'border-emerald-500/40');
+      }
+    }
+
+    // Theme Management (Light / Dark)
+    function initTheme() {
+      const savedTheme = localStorage.getItem('lanwatch-theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      }
+      updateThemeButton();
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('lanwatch-theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('lanwatch-theme', 'dark');
+      }
+      updateThemeButton();
+      renderCharts();
+      if (currentAssessment && currentAssessment.radar) {
+        renderRadarChart();
+      }
+      if (topologyNetwork) {
+        initTopologyGraph();
+      }
+    }
+
+    function updateThemeButton() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const btnText = document.getElementById('theme-btn-text');
+      if (btnText) {
+        btnText.textContent = isDark ? 'Tema Chiaro' : 'Tema Scuro';
+      }
+      lucide.createIcons();
+    }
+
+    // Connect WebSocket
+    function setupWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        document.getElementById('ws-status-text').textContent = 'Live';
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'scan_progress') {
+            if (!msg.is_auto) {
+              updateScanProgress(msg.message, msg.percent);
+            } else {
+              const pillText = document.getElementById('header-autoscan-text');
+              if (pillText) pillText.textContent = `Scansione ${msg.percent}%`;
+            }
+          } else if (msg.type === 'scan_complete') {
+            finishScanProgress();
+            if (!msg.is_auto) {
+              playChime(880, 0.2);
+            }
+            loadAllData();
+            loadAutoScanSettings();
+          }
+        } catch (e) {}
+      };
+
+      ws.onclose = () => {
+        document.getElementById('ws-status-text').textContent = 'Riconnessione...';
+        setTimeout(setupWebSocket, 3000);
+      };
+    }
+
+    // Switch View Tabs
+    function switchTab(tabId) {
+      const tabs = ['inventory', 'topology', 'security', 'analytics', 'events', 'settings'];
+      tabs.forEach(t => {
+        const content = document.getElementById(`tab-content-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (content) {
+          if (t === tabId) {
+            content.classList.remove('hidden');
+          } else {
+            content.classList.add('hidden');
+          }
+        }
+        if (btn) {
+          if (t === tabId) {
+            btn.className = 'pb-3 border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-semibold whitespace-nowrap';
+          } else {
+            btn.className = 'pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap';
+          }
+        }
+      });
+      if (tabId === 'analytics') {
+        renderCharts();
+      } else if (tabId === 'security') {
+        renderRadarChart();
+      } else if (tabId === 'topology') {
+        setTimeout(initTopologyGraph, 50);
+      } else if (tabId === 'settings') {
+        loadTelegramSettings();
+        loadAutoScanSettings();
+      }
+      lucide.createIcons();
+    }
+
+    // Load Initial Data & Health
+    async function loadAllData() {
+      try {
+        // Load Network info
+        const netRes = await fetch('/api/network');
+        currentNetwork = await netRes.json();
+        document.getElementById('header-net-pill').innerHTML = `
+          <i data-lucide="network" class="w-3.5 h-3.5 text-emerald-500 inline"></i>
+          Subnet: <span class="font-semibold text-emerald-600 dark:text-emerald-400">${currentNetwork.cidr}</span> • Gateway: <span class="font-semibold text-slate-700 dark:text-slate-200">${currentNetwork.gateway}</span>
+        `;
+
+        // Update health pill
+        loadNetworkHealth();
+
+        // Load Devices
+        const devRes = await fetch('/api/devices');
+        currentDevices = await devRes.json();
+        renderDevicesTable();
+
+        // Load Assessment
+        const assRes = await fetch('/api/security/assessment');
+        currentAssessment = await assRes.json();
+        renderAssessment();
+
+        // Load Events & Presence
+        loadEvents();
+        updatePresence();
+
+        // Load Telegram & Auto-scan Settings
+        loadTelegramSettings();
+        loadAutoScanSettings();
+
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error loading data:', err);
+      }
+    }
+
+    async function loadNetworkHealth() {
+      try {
+        const hRes = await fetch('/api/network/health');
+        const h = await hRes.json();
+        const gwText = h.gateway_ms !== null ? `${h.gateway_ms.toFixed(1)} ms` : 'offline';
+        const netText = h.internet_ms !== null ? `${h.internet_ms.toFixed(1)} ms` : 'offline';
+        document.getElementById('health-text').textContent = `GW: ${gwText} • Net: ${netText}`;
+      } catch (e) {}
+    }
+
+    // Helper: Determine Web UI link for a device
+    function getDeviceWebUrl(dev) {
+      if (!dev.services || dev.services.length === 0) return null;
+      const webPorts = [8006, 8123, 8443, 443, 9000, 8080, 8000, 80];
+      for (const p of webPorts) {
+        const found = dev.services.find(s => s.port === p);
+        if (found) {
+          const scheme = [8006, 8443, 443].includes(p) ? 'https' : 'http';
+          return `${scheme}://${dev.ip}:${p}`;
+        }
+      }
+      return null;
+    }
+
+    // Render Devices Table
+    function renderDevicesTable() {
+      const tbody = document.getElementById('devices-table-body');
+      const searchQuery = document.getElementById('filter-search').value.toLowerCase();
+      const categoryFilter = document.getElementById('filter-category').value;
+      const trustFilter = document.getElementById('filter-trust').value;
+      const onlineOnly = document.getElementById('filter-online').checked;
+      const offlineOnly = document.getElementById('filter-offline').checked;
+
+      // Count untrusted devices
+      const untrustedDevices = currentDevices.filter(d => !d.is_trusted && !d.is_gateway && !d.is_local);
+      const untrustedBanner = document.getElementById('untrusted-alert-banner');
+      if (untrustedDevices.length > 0) {
+        document.getElementById('untrusted-count').textContent = untrustedDevices.length;
+        untrustedBanner.classList.remove('hidden');
+      } else {
+        untrustedBanner.classList.add('hidden');
+      }
+
+      const filtered = currentDevices.filter(d => {
+        if (categoryFilter && d.category !== categoryFilter) return false;
+        if (onlineOnly && !d.is_online) return false;
+        if (offlineOnly && d.is_online) return false;
+        if (trustFilter === 'trusted' && !d.is_trusted) return false;
+        if (trustFilter === 'untrusted' && d.is_trusted) return false;
+
+        if (searchQuery) {
+          const svcsText = (d.services || []).map(s => `${s.service} ${s.title || ''} ${s.banner || ''}`).join(' ').toLowerCase();
+          const match = (d.ip || '').toLowerCase().includes(searchQuery) ||
+                        (d.mac || '').toLowerCase().includes(searchQuery) ||
+                        (d.vendor || '').toLowerCase().includes(searchQuery) ||
+                        (d.hostname || '').toLowerCase().includes(searchQuery) ||
+                        (d.custom_name || '').toLowerCase().includes(searchQuery) ||
+                        (d.category || '').toLowerCase().includes(searchQuery) ||
+                        svcsText.includes(searchQuery);
+          if (!match) return false;
+        }
+        return true;
+      }).sort(function(a, b) {
+        const ipToNum = function(ip) { return (ip || '').split('.').reduce(function(acc, oct) { return (acc << 8) + parseInt(oct || 0, 10); }, 0) >>> 0; };
+        let va, vb;
+        if (sortColumn === 'ip') { va = ipToNum(a.ip); vb = ipToNum(b.ip); }
+        else if (sortColumn === 'name') { va = (a.custom_name || a.hostname || a.vendor || '').toLowerCase(); vb = (b.custom_name || b.hostname || b.vendor || '').toLowerCase(); }
+        else if (sortColumn === 'category') { va = (a.category || '').toLowerCase(); vb = (b.category || '').toLowerCase(); }
+        else if (sortColumn === 'score') { va = a.security_score || 0; vb = b.security_score || 0; }
+        else { va = 0; vb = 0; }
+        if (va < vb) return -1 * sortDirection;
+        if (va > vb) return 1 * sortDirection;
+        return 0;
+      });
+
+      const onlineDevices = currentDevices.filter(d => d.is_online === 1);
+      document.getElementById('kpi-total-devices').textContent = onlineDevices.length;
+      document.getElementById('kpi-devices-subtitle').textContent = `di ${currentDevices.length} dispositivi in inventario`;
+      document.getElementById('tab-badge-inventory').textContent = currentDevices.length;
+
+      // Count active IoT devices
+      const activeIotDevices = currentDevices.filter(d => d.is_online === 1 && ['IoT / Smart Home', 'Assistente Vocale / Smart Speaker', 'Telecamera IP / Videosorveglianza'].includes(d.category));
+      document.getElementById('kpi-iot-badge').textContent = activeIotDevices.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-slate-400">
+              Nessun dispositivo corrisponde ai filtri impostati.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(d => {
+        const isGateway = d.is_gateway;
+        const isLocal = d.is_local;
+        const displayName = d.custom_name || d.hostname || d.vendor || 'Dispositivo';
+        const score = d.security_score || 100;
+        let scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">${score}</span>`;
+        if (score < 60) {
+          scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">${score}</span>`;
+        } else if (score < 85) {
+          scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">${score}</span>`;
+        }
+
+        const webUrl = getDeviceWebUrl(d);
+        const webButton = webUrl ? `
+          <a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-colors" title="Apri interfaccia web in nuova scheda">
+            <i data-lucide="external-link" class="w-3 h-3"></i> Web UI
+          </a>
+        ` : '';
+
+        const trustBadge = d.is_trusted
+          ? `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2.5 h-2.5"></i> Fidato</span>`
+          : `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-0.5"><i data-lucide="help-circle" class="w-2.5 h-2.5"></i> Da Verificare</span>`;
+
+        const svcs = (d.services || []).map(s => {
+          let color = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+          if (s.port === 80) color = 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30';
+          if (s.port === 443 || s.port === 8006) color = 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+          if (s.port === 22) color = 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30';
+
+          let label = `${s.service}:${s.port}`;
+          if (s.title && s.title.length > 0) {
+            label = `${s.service} ("${s.title.length > 18 ? s.title.slice(0, 16) + '...' : s.title}")`;
+          }
+          return `<span class="px-1.5 py-0.5 rounded text-[10px] border ${color}" title="${escapeHtml(s.title || s.banner || s.service)}">${escapeHtml(label)}</span>`;
+        }).join(' ');
+
+        return `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer" onclick="openDeviceModal('${d.mac}')">
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors">
+                  <i data-lucide="${d.icon || 'cpu'}" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-100">
+                    <span>${escapeHtml(displayName)}</span>
+                    ${isGateway ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">Gateway</span>' : ''}
+                    ${isLocal ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Questo PC</span>' : ''}
+                  </div>
+                  <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
+                    <span class="flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full ${d.is_online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                      <span>${d.is_online ? 'Attivo' : 'Offline'}</span>
+                    </span>
+                    <span>•</span>
+                    ${trustBadge}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 font-medium">
+              ${d.ip}
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-mono text-xs text-slate-500 dark:text-slate-400">${d.mac}</div>
+              <div class="text-[11px] font-medium text-slate-800 dark:text-slate-300 truncate max-w-xs">${d.vendor || 'Sconosciuto'}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 mb-0.5">${d.category || 'Dispositivo'}</span>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs">${d.os_family || 'Sconosciuto'}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex flex-wrap items-center gap-1.5 max-w-xs">
+                ${webButton}
+                ${svcs || '<span class="text-slate-400 dark:text-slate-600 text-[11px]">-</span>'}
+              </div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${scoreBadge}
+            </td>
+            <td class="py-3 px-4 text-right no-print" onclick="event.stopPropagation()">
+              <button onclick="openDeviceModal('${d.mac}')" class="px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded border border-slate-300 dark:border-slate-700 transition-colors">
+                Dettagli
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function sortDevices(col) {
+      if (sortColumn === col) {
+        sortDirection *= -1;
+      } else {
+        sortColumn = col;
+        sortDirection = 1;
+      }
+      // Update sort indicators
+      ['ip', 'name', 'category', 'score'].forEach(function(c) {
+        const el = document.getElementById('sort-' + c);
+        if (el) el.textContent = c === sortColumn ? (sortDirection === 1 ? '▲' : '▼') : '▲';
+      });
+      renderDevicesTable();
+    }
+
+    function filterUntrustedOnly() {
+      switchTab('inventory');
+      document.getElementById('filter-trust').value = 'untrusted';
+      renderDevicesTable();
+    }
+
+    // Render Security Assessment & Radar
+    function renderAssessment() {
+      if (!currentAssessment) return;
+      const ass = currentAssessment;
+
+      document.getElementById('kpi-security-score').textContent = ass.global_score;
+      document.getElementById('assessment-card-score').textContent = ass.global_score;
+      document.getElementById('kpi-grade-badge').textContent = `Grado ${ass.grade}`;
+      document.getElementById('kpi-score-label').textContent = ass.health_label;
+      document.getElementById('assessment-card-health').textContent = ass.health_label;
+
+      const findings = ass.findings || [];
+      document.getElementById('kpi-findings-total').textContent = findings.length;
+      document.getElementById('tab-badge-security').textContent = findings.length;
+      document.getElementById('findings-count-label').textContent = `${findings.length} anomalie riscontrate`;
+      document.getElementById('assessment-card-findings-text').textContent = `${findings.length} anomalie riscontrate`;
+
+      const counts = ass.counts || {};
+      document.getElementById('kpi-findings-badges').innerHTML = `
+        <span class="px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">${counts.critico || 0} Critici</span>
+        <span class="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">${counts.alto || 0} Alti</span>
+        <span class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">${counts.medio || 0} Medi</span>
+      `;
+
+      renderRadarChart();
+
+      const container = document.getElementById('findings-container');
+      if (findings.length === 0) {
+        container.innerHTML = `
+          <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-6 text-center">
+            <i data-lucide="shield-check" class="w-10 h-10 text-emerald-500 mx-auto mb-2"></i>
+            <h5 class="font-bold text-emerald-700 dark:text-emerald-300">Nessuna vulnerabilità critica o anomalia rilevata!</h5>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">La tua rete domestica presenta una postura di sicurezza ottimale secondo l'indagine passiva.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = findings.map(f => {
+        let badgeColor = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+        if (f.severity === 'CRITICO') {
+          badgeColor = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
+        } else if (f.severity === 'ALTO') {
+          badgeColor = 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30';
+        } else if (f.severity === 'BASSO') {
+          badgeColor = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30';
+        }
+
+        const target = f.target_device || {};
+        const matchedDev = currentDevices.find(d => (target.mac && d.mac === target.mac) || (target.ip && d.ip === target.ip));
+        const displayName = (matchedDev && matchedDev.custom_name) ? matchedDev.custom_name : (target.name || target.ip || 'Dispositivo');
+        const targetMac = target.mac || (matchedDev ? matchedDev.mac : '');
+
+        return `
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm transition-colors">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${badgeColor}">${f.severity}</span>
+                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">${f.category}</span>
+                <h5 class="text-sm font-bold text-slate-900 dark:text-white">${escapeHtml(f.title)}</h5>
+              </div>
+              <div onclick="${targetMac ? `openDeviceModal('${targetMac}')` : ''}" class="text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 ${targetMac ? 'cursor-pointer hover:border-emerald-500/50 hover:text-slate-900 dark:hover:text-white transition-colors' : ''}" title="Clicca per aprire i dettagli del dispositivo">
+                <i data-lucide="hard-drive" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span class="text-emerald-600 dark:text-emerald-400 font-semibold">${target.ip}</span> • <span>${escapeHtml(displayName)}</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHtml(f.description)}</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+              <div class="bg-amber-50/50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-amber-200/50 dark:border-slate-800/80 space-y-1">
+                <div class="font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Perché è un Rischio (Impatto LAN)
+                </div>
+                <p class="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">${escapeHtml(f.risk_impact)}</p>
+              </div>
+
+              <div class="bg-emerald-50/50 dark:bg-slate-950/80 p-2.5 rounded-lg border border-emerald-200/50 dark:border-slate-800/80 space-y-1">
+                <div class="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                  <i data-lucide="wrench" class="w-3.5 h-3.5"></i> Come Risolverlo (Remediation)
+                </div>
+                <p class="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">${escapeHtml(f.remediation)}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // Render 5-Axis Radar Chart
+    function renderRadarChart() {
+      const radarCanvas = document.getElementById('chart-security-radar');
+      if (!radarCanvas || !currentAssessment || !currentAssessment.radar) return;
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? '#334155' : '#cbd5e1';
+
+      if (radarChart) radarChart.destroy();
+      radarChart = new Chart(radarCanvas.getContext('2d'), {
+        type: 'radar',
+        data: {
+          labels: currentAssessment.radar.labels,
+          datasets: [{
+            label: 'Punteggio di Sicurezza',
+            data: currentAssessment.radar.values,
+            backgroundColor: 'rgba(16, 185, 129, 0.25)',
+            borderColor: '#10b981',
+            borderWidth: 2,
+            pointBackgroundColor: '#10b981',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#10b981',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              angleLines: { color: gridColor },
+              grid: { color: gridColor },
+              pointLabels: { color: textColor, font: { size: 10, weight: '600' } },
+              ticks: { display: false, min: 0, max: 100 }
+            }
+          }
+        }
+      });
+    }
+
+    // Helper: Identify Hypervisor Node (Proxmox VE)
+    function findHypervisorDevice(devices) {
+      // 1. Definite Hypervisor: device running Proxmox Web GUI on port 8006
+      const port8006Dev = devices.find(d => !d.is_gateway && (d.services || []).some(s => s.port === 8006));
+      if (port8006Dev) return port8006Dev;
+
+      // 2. Fallback: Host with Virtualizzazione category or explicit PVE server hostname
+      return devices.find(d => 
+        !d.is_gateway && (
+          (d.category && d.category === 'Virtualizzazione / Server') ||
+          ((d.hostname || '').toLowerCase().includes('proxmox virtual environment')) ||
+          ((d.custom_name || '').toLowerCase().includes('proxmox pve'))
+        )
+      );
+    }
+
+    // Helper: Determine if device is a Proxmox VM or Container
+    function isProxmoxGuest(d, hypervisorDev) {
+      if (!hypervisorDev || d.mac === hypervisorDev.mac || d.is_gateway || d.is_local) return false;
+
+      // Physical Smart TVs or network printers are never virtual guests
+      const cat = (d.category || '').toLowerCase();
+      if (cat.includes('tv') || cat.includes('televisore') || cat.includes('stampante')) return false;
+
+      const mac = (d.mac || '').toUpperCase();
+      // 1. MAC prefix BC:24:11 (Proxmox Server Solutions GmbH OUI)
+      if (mac.startsWith('BC:24:11')) return true;
+
+      // 2. Vendor name
+      if (d.vendor && d.vendor.toLowerCase().includes('proxmox')) return true;
+
+      // 3. Category VM / Container
+      if (d.category === 'Macchina Virtuale / Container' || d.category === 'Server / Container Web') return true;
+
+      // 4. Hostname or custom_name indications
+      const name = ((d.custom_name || '') + ' ' + (d.hostname || '')).toLowerCase();
+      if (name.includes('proxmox') || name.includes('shinobi') || name.includes('container') || name.includes('lxc') || name.includes('vm ')) return true;
+
+      // 5. Portainer management or container OS
+      if ((d.services || []).some(s => s.port === 9000 || (s.title && s.title.toLowerCase().includes('portainer')))) return true;
+
+      // 6. Linux virtual interface with random MAC running web server or SSH
+      if (d.os_family && (d.os_family.includes('Virtual') || d.os_family.includes('Container') || d.os_family.includes('Guest VM'))) return true;
+
+      return false;
+    }
+
+    // Helper: Create a rich DOM element tooltip for Vis.js nodes
+    function createTopologyTooltip(opts) {
+      const el = document.createElement('div');
+      el.className = 'topology-tooltip-card';
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const titleColor = isDark ? '#ffffff' : '#0f172a';
+      const labelMuted = isDark ? '#94a3b8' : '#64748b';
+      const valColor = isDark ? '#f1f5f9' : '#1e293b';
+
+      let badgesHtml = '';
+      if (opts.isGateway) {
+        badgesHtml += `<span style="display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid rgba(59,130,246,0.35)">GATEWAY ROUTER</span> `;
+      }
+      if (opts.isHypervisor) {
+        badgesHtml += `<span style="display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.35)">HYPERVISOR PVE</span> `;
+      }
+      if (opts.isGuest) {
+        badgesHtml += `<span style="display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(20,184,166,0.2);color:#2dd4bf;border:1px solid rgba(20,184,166,0.35)">GUEST vSWITCH</span> `;
+      }
+      if (opts.isOnline) {
+        badgesHtml += `<span style="display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.25)">ONLINE</span> `;
+      }
+
+      let servicesHtml = '';
+      if (opts.services && opts.services.length > 0) {
+        const portBadges = opts.services.slice(0, 4).map(s => {
+          const name = s.service || s.port;
+          return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;background:rgba(99,102,241,0.18);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)">${s.port}:${escapeHtml(String(name))}</span>`;
+        }).join(' ');
+        servicesHtml = `
+          <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(148,163,184,0.18)">
+            <div style="color:${labelMuted};font-size:10px;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Servizi Rilevati:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">${portBadges}</div>
+          </div>
+        `;
+      }
+
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+          <span style="font-size:15px">${opts.icon || '📱'}</span>
+          <span style="font-weight:700;font-size:13px;color:${titleColor}">${escapeHtml(opts.title || 'Dispositivo')}</span>
+        </div>
+        ${badgesHtml ? `<div style="margin-bottom:7px">${badgesHtml}</div>` : ''}
+        <div style="display:grid;grid-template-columns:auto 1fr;column-gap:8px;row-gap:2.5px;font-size:11px">
+          <span style="color:${labelMuted}">IP:</span>
+          <span style="color:#10b981;font-weight:600;font-family:monospace">${escapeHtml(opts.ip || '-')}</span>
+          <span style="color:${labelMuted}">MAC:</span>
+          <span style="color:${valColor};font-family:monospace">${escapeHtml(opts.mac || '-')}</span>
+          ${opts.category ? `<span style="color:${labelMuted}">Tipo:</span><span style="color:${valColor}">${escapeHtml(opts.category)}</span>` : ''}
+          ${opts.vendor ? `<span style="color:${labelMuted}">Vendor:</span><span style="color:${valColor};max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(opts.vendor)}">${escapeHtml(opts.vendor)}</span>` : ''}
+          ${opts.hostname && opts.hostname !== opts.title ? `<span style="color:${labelMuted}">Host:</span><span style="color:${valColor};max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(opts.hostname)}</span>` : ''}
+        </div>
+        ${servicesHtml}
+        <div style="margin-top:8px;padding-top:5px;border-top:1px solid rgba(148,163,184,0.18);font-size:10px;color:${labelMuted};display:flex;align-items:center;gap:4px">
+          <span>👆</span> <span>Clicca per aprire la scheda dettagli</span>
+        </div>
+      `;
+      return el;
+    }
+
+    // Render Interactive Topology Graph (Vis.js)
+    function initTopologyGraph() {
+      const container = document.getElementById('topology-network');
+      if (!container || !currentDevices || currentDevices.length === 0) return;
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const nodes = [];
+      const edges = [];
+
+      // 1. Find Gateway
+      const gwDev = currentDevices.find(function(d) {
+        return d.is_gateway || d.ip === '192.168.1.254' || (d.category && d.category.includes('Gateway'));
+      });
+      const gwId = gwDev ? gwDev.mac : 'GATEWAY';
+
+      // 2. Find Proxmox Hypervisor
+      const hypDev = findHypervisorDevice(currentDevices);
+
+      // Gateway central root node
+      const gwName = gwDev ? (gwDev.custom_name || gwDev.hostname || 'Gateway Router') : 'Gateway';
+      nodes.push({
+        id: gwId,
+        label: '🌐 ' + gwName + '\n' + (gwDev ? gwDev.ip : '192.168.1.254') + '\n[Gateway Router]',
+        title: createTopologyTooltip({
+          title: gwName,
+          icon: '🌐',
+          ip: gwDev ? gwDev.ip : '192.168.1.254',
+          mac: gwId,
+          category: 'Router / Gateway',
+          vendor: gwDev ? gwDev.vendor : 'Vodafone Italia',
+          isGateway: true,
+          isOnline: true,
+          services: gwDev ? gwDev.services : [],
+        }),
+        shape: 'box',
+        color: {
+          background: '#1d4ed8',
+          border: '#3b82f6',
+          highlight: { background: '#1e40af', border: '#60a5fa' }
+        },
+        borderWidth: 2,
+        font: { color: '#ffffff', size: 12, bold: true },
+        margin: 12,
+        shadow: true,
+      });
+
+      // If Hypervisor exists, render it with prominent server styling
+      if (hypDev) {
+        const hypName = hypDev.custom_name || hypDev.hostname || 'Proxmox VE';
+        nodes.push({
+          id: hypDev.mac,
+          label: '🖥️ ' + hypName + '\n' + hypDev.ip + '\n[Hypervisor PVE]',
+          title: createTopologyTooltip({
+            title: hypName,
+            icon: '🖥️',
+            ip: hypDev.ip,
+            mac: hypDev.mac,
+            category: hypDev.category || 'Virtualizzazione / Server',
+            vendor: hypDev.vendor,
+            isHypervisor: true,
+            isOnline: true,
+            services: hypDev.services || [],
+          }),
+          shape: 'box',
+          color: {
+            background: isDark ? '#064e3b' : '#ecfdf5',
+            border: '#10b981',
+            highlight: { background: isDark ? '#065f46' : '#d1fae5', border: '#34d399' }
+          },
+          borderWidth: 3,
+          font: { color: isDark ? '#6ee7b7' : '#065f46', size: 12, bold: true },
+          margin: 10,
+          shadow: true,
+        });
+
+        edges.push({
+          from: gwId,
+          to: hypDev.mac,
+          label: 'LAN Trunk',
+          color: { color: isDark ? '#3b82f6' : '#2563eb', highlight: '#60a5fa' },
+          width: 3,
+          dashes: false,
+          font: { color: isDark ? '#93c5fd' : '#1d4ed8', size: 10, align: 'middle' },
+        });
+      }
+
+      // Filter active devices and deduplicate by IP (most recent last_seen wins)
+      const ipDeviceMap = new Map();
+      currentDevices.forEach(function(d) {
+        if (!d.ip) return;
+        if (d.is_online === 0) return;
+        const existing = ipDeviceMap.get(d.ip);
+        if (!existing) {
+          ipDeviceMap.set(d.ip, d);
+        } else {
+          const dateNew = new Date(d.last_seen || 0).getTime();
+          const dateOld = new Date(existing.last_seen || 0).getTime();
+          if (dateNew > dateOld) {
+            ipDeviceMap.set(d.ip, d);
+          }
+        }
+      });
+      const activeTopologyDevices = Array.from(ipDeviceMap.values());
+
+      activeTopologyDevices.forEach(function(d) {
+        if (d.is_gateway || (gwDev && d.mac === gwDev.mac) || (hypDev && d.mac === hypDev.mac) || d.ip === '192.168.1.254') return;
+
+        const cat = d.category || '';
+        const isGuest = isProxmoxGuest(d, hypDev);
+        const name = d.custom_name || d.hostname || d.vendor || d.ip || 'Unknown';
+
+        let nodeColor = '#64748b';
+        let nodeBg = isDark ? '#1e293b' : '#f8fafc';
+        let prefix = '';
+
+        if (isGuest) {
+          nodeColor = '#14b8a6';
+          nodeBg = isDark ? '#0f3835' : '#f0fdfa';
+          prefix = '📦 ';
+        } else if (cat.includes('Virtualizzazione') || cat.includes('Server')) {
+          nodeColor = '#10b981';
+          prefix = '🖧 ';
+        } else if (cat.includes('Smart Home') || cat.includes('IoT') || cat.includes('Speaker') || cat.includes('Vocale')) {
+          nodeColor = '#a855f7';
+          prefix = '💡 ';
+        } else if (cat.includes('Reader') || cat.includes('Kindle') || cat.includes('Libro')) {
+          nodeColor = '#0284c7';
+          prefix = '📖 ';
+        } else if (cat.includes('Mobile') || cat.includes('Smartphone') || cat.includes('Tablet')) {
+          nodeColor = '#38bdf8';
+          prefix = '📱 ';
+        } else if (cat.includes('PC') || cat.includes('Computer') || cat.includes('Laptop')) {
+          nodeColor = '#f59e0b';
+          prefix = '💻 ';
+        } else if (cat.includes('Stampante') || cat.includes('Media')) {
+          nodeColor = '#6366f1';
+          prefix = '🖨️ ';
+        } else if (cat.includes('Telecamera') || cat.includes('Videosorveglianza') || cat.includes('NVR')) {
+          nodeColor = '#ec4899';
+          prefix = '📷 ';
+        } else if (cat.includes('Televisore') || cat.includes('TV') || cat.includes('Streaming')) {
+          nodeColor = '#8b5cf6';
+          prefix = '📺 ';
+        }
+
+        const roleSuffix = isGuest ? '\n(VM / LXC)' : '';
+        const nodeTooltip = createTopologyTooltip({
+          title: name,
+          icon: prefix.trim() || '📱',
+          ip: d.ip,
+          mac: d.mac,
+          category: d.category,
+          vendor: d.vendor,
+          hostname: d.hostname,
+          isGuest: isGuest,
+          isOnline: d.is_online === 1,
+          services: d.services || [],
+        });
+
+        nodes.push({
+          id: d.mac,
+          label: prefix + name + '\n' + (d.ip || '') + roleSuffix,
+          title: nodeTooltip,
+          shape: 'box',
+          color: {
+            background: nodeBg,
+            border: nodeColor,
+            highlight: { background: isDark ? '#334155' : '#e2e8f0', border: nodeColor }
+          },
+          borderWidth: 2,
+          font: { color: isDark ? '#f1f5f9' : '#0f172a', size: 11 },
+          margin: 8,
+        });
+
+        let parentTarget = gwId;
+        let isVirtualEdge = false;
+
+        if (d.parent_mac && d.parent_mac !== 'auto' && currentDevices.some(function(x) { return x.mac === d.parent_mac; })) {
+          parentTarget = d.parent_mac;
+          isVirtualEdge = !!(hypDev && parentTarget === hypDev.mac);
+        } else if (isGuest && hypDev) {
+          parentTarget = hypDev.mac;
+          isVirtualEdge = true;
+        }
+
+        if (isVirtualEdge) {
+          edges.push({
+            from: parentTarget,
+            to: d.mac,
+            label: 'vSwitch',
+            color: { color: isDark ? '#14b8a6' : '#0d9488', highlight: '#2dd4bf' },
+            width: 2,
+            dashes: [6, 4],
+            font: { color: isDark ? '#5eead4' : '#0f766e', size: 9, align: 'middle' },
+          });
+        } else {
+          edges.push({
+            from: parentTarget,
+            to: d.mac,
+            color: { color: isDark ? '#334155' : '#cbd5e1', highlight: '#3b82f6' },
+            width: 1.5,
+            dashes: !d.is_trusted,
+          });
+        }
+      });
+
+      const data = {
+        nodes: new vis.DataSet(nodes),
+        edges: new vis.DataSet(edges),
+      };
+
+      const options = {
+        physics: {
+          enabled: true,
+          barnesHut: {
+            gravitationalConstant: -8000,
+            centralGravity: 0.1,
+            springLength: 220,
+            springConstant: 0.04,
+            damping: 0.9,
+            avoidOverlap: 1.0,
+          },
+          stabilization: {
+            enabled: true,
+            iterations: 300,
+            updateInterval: 10,
+            fit: true,
+          },
+        },
+        interaction: { hover: true, tooltipDelay: 80, zoomView: true, dragView: true, dragNodes: true },
+        nodes: { margin: 12, widthConstraint: { minimum: 130, maximum: 210 } },
+        edges: { smooth: { type: 'dynamic', roundness: 0.4 } },
+      };
+
+      if (topologyNetwork) topologyNetwork.destroy();
+      topologyNetwork = new vis.Network(container, data, options);
+
+      // stabilizationIterationsDone fires when iterations complete — before physics resumes
+      topologyNetwork.on('stabilizationIterationsDone', function() {
+        topologyNetwork.setOptions({ physics: { enabled: false } });
+        topologyNetwork.fit({ animation: { duration: 400 } });
+      });
+
+      topologyNetwork.on('click', function(params) {
+        if (params.nodes && params.nodes.length > 0) {
+          openDeviceModal(params.nodes[0]);
+        }
+      });
+    }
+
+    function resetTopologyPhysics() {
+      if (topologyNetwork) {
+        topologyNetwork.fit({ animation: { duration: 500 } });
+      }
+    }
+
+    function formatLastSeen(isoStr) {
+      if (!isoStr) return '';
+      try {
+        const d = new Date(isoStr);
+        const now = new Date();
+        const diffMs = now - d;
+        if (diffMs < 0) return 'poco fa';
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'poco fa';
+        if (diffMin < 60) return `${diffMin} min fa`;
+        const diffHours = Math.floor(diffMin / 60);
+        if (diffHours < 24) return `${diffHours}h fa (alle ${d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})})`;
+        return `${d.toLocaleDateString([], {day: '2-digit', month: '2-digit'})} alle ${d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+      } catch (err) {
+        return '';
+      }
+    }
+
+    function isMobilePresenceDevice(d) {
+      if (!d) return false;
+      const cat = (d.category || '').toLowerCase();
+      // Strictly exclude routers, repeaters, servers, virtual machines, printers, TVs, IoT
+      if (
+        cat.includes('router') ||
+        cat.includes('gateway') ||
+        cat.includes('server') ||
+        cat.includes('virtualizzazione') ||
+        cat.includes('container') ||
+        cat.includes('homelab') ||
+        cat.includes('nvr') ||
+        cat.includes('telecamera') ||
+        cat.includes('stampante') ||
+        cat.includes('printer') ||
+        cat.includes('tv') ||
+        cat.includes('media') ||
+        cat.includes('speaker') ||
+        cat.includes('assistente') ||
+        cat.includes('iot')
+      ) {
+        return false;
+      }
+
+      const customName = (d.custom_name || '').toLowerCase();
+      const hostName = (d.hostname || '').toLowerCase();
+      if (customName.includes('router') || customName.includes('repeater') || hostName.includes('router') || hostName.includes('repeater')) {
+        return false;
+      }
+
+      // Must be an actual smartphone, mobile device, or tablet
+      return (
+        cat.includes('smartphone') ||
+        cat.includes('mobile') ||
+        cat.includes('tablet')
+      );
+    }
+
+    // Render Presence Tracker
+    function updatePresence() {
+      const container = document.getElementById('presence-list-container');
+      const mobileDevs = currentDevices.filter(isMobilePresenceDevice);
+
+      const onlineMobiles = mobileDevs.filter(d => d.is_online === 1);
+      document.getElementById('kpi-presence-count').textContent = onlineMobiles.length;
+
+      if (!container) return;
+      if (mobileDevs.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500 py-3">Nessun dispositivo mobile registrato.</p>';
+        return;
+      }
+
+      // Sort: online first, then alphabetical
+      const sortedMobileDevs = [...mobileDevs].sort((a, b) => {
+        const onA = a.is_online === 1 ? 1 : 0;
+        const onB = b.is_online === 1 ? 1 : 0;
+        if (onA !== onB) return onB - onA;
+        return (a.custom_name || a.hostname || '').localeCompare(b.custom_name || b.hostname || '');
+      });
+
+      container.innerHTML = sortedMobileDevs.map(d => {
+        const isOnline = d.is_online === 1;
+        const iconBox = isOnline
+          ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+          : 'bg-slate-200/60 dark:bg-slate-800 text-slate-400';
+        const cardStyle = isOnline
+          ? 'bg-purple-500/[0.04] dark:bg-slate-950 border-purple-500/30 dark:border-purple-500/30'
+          : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 opacity-65';
+
+        const statusPill = isOnline
+          ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>A Casa</span>`
+          : `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300/40 dark:border-slate-700/40"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Fuori casa</span>`;
+
+        const statusSub = isOnline
+          ? `<span class="text-emerald-600 dark:text-emerald-400 font-mono">${escapeHtml(d.ip || 'Wi-Fi')}</span> • Connesso ora`
+          : (d.last_seen ? `Ultimo rilevamento: ${formatLastSeen(d.last_seen)}` : 'Non rilevato in rete');
+
+        return `
+          <div onclick="openDeviceModal('${d.mac}')" class="flex items-center gap-3 p-2.5 rounded-lg border ${cardStyle} cursor-pointer hover:border-purple-500/50 transition-all select-none" title="Clicca per aprire i dettagli">
+            <div class="h-9 w-9 rounded-lg ${iconBox} flex items-center justify-center flex-shrink-0">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-1 mb-0.5">
+                <span class="font-semibold text-xs text-slate-800 dark:text-slate-200 truncate">${escapeHtml(d.custom_name || d.hostname || d.ip)}</span>
+                ${statusPill}
+              </div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${statusSub}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // Render Event Logs
+    async function loadEvents() {
+      try {
+        const res = await fetch('/api/events');
+        const events = await res.json();
+        const container = document.getElementById('events-list-container');
+        if (!events || events.length === 0) return;
+
+        container.innerHTML = events.map(e => {
+          let dotColor = 'bg-emerald-500';
+          if (e.event_type === 'DEVICE_OFFLINE') dotColor = 'bg-slate-400';
+          else if (e.event_type === 'NEW_DEVICE') dotColor = 'bg-blue-500';
+          else if (e.event_type === 'ALERT') dotColor = 'bg-amber-500';
+
+          return `
+          <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full ${dotColor}"></span>
+              <span class="text-slate-800 dark:text-slate-200 font-medium">${escapeHtml(e.message)}</span>
+            </div>
+            <span class="text-[11px] text-slate-500 font-mono">${new Date(e.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+          </div>
+        `;
+        }).join('');
+      } catch (e) {}
+    }
+
+    // Modal Drawer Functions
+    async function openDeviceModal(mac) {
+      selectedDeviceMac = mac;
+      try {
+        const res = await fetch(`/api/devices/${encodeURIComponent(mac)}`);
+        const dev = await res.json();
+        selectedDeviceObj = dev;
+
+        document.getElementById('modal-device-title').textContent = dev.custom_name || dev.hostname || dev.vendor || 'Dispositivo';
+        document.getElementById('modal-device-subtitle').textContent = `${dev.ip} • ${dev.mac} • ${dev.vendor || 'Sconosciuto'}`;
+
+        // Trust badge in modal header
+        const trustBadge = document.getElementById('modal-trust-badge');
+        if (dev.is_trusted) {
+          trustBadge.textContent = 'Fidato ✓';
+          trustBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+        } else {
+          trustBadge.textContent = 'Da Verificare ⚠️';
+          trustBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+        }
+
+        // Trust toggle button
+        const trustBtn = document.getElementById('modal-btn-trust-toggle');
+        const trustText = document.getElementById('modal-trust-toggle-text');
+        if (dev.is_trusted) {
+          trustBtn.className = 'px-3 py-1.5 font-medium rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all flex items-center gap-1.5';
+          trustText.textContent = 'Revoca Fiducia';
+        } else {
+          trustBtn.className = 'px-3 py-1.5 font-medium rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5';
+          trustText.textContent = 'Segna come Fidato';
+        }
+
+        // Web UI button
+        const webUrl = getDeviceWebUrl(dev);
+        const webBtn = document.getElementById('modal-btn-webui');
+        if (webUrl) {
+          webBtn.href = webUrl;
+          webBtn.classList.remove('hidden');
+        } else {
+          webBtn.classList.add('hidden');
+        }
+
+        // Specs
+        document.getElementById('modal-spec-ip').textContent = dev.ip;
+        document.getElementById('modal-spec-mac').textContent = dev.mac;
+        document.getElementById('modal-spec-vendor').textContent = dev.vendor || 'Sconosciuto';
+        document.getElementById('modal-spec-hostname').textContent = dev.hostname || 'Non risolto';
+        document.getElementById('modal-hint-hostname').textContent = dev.hostname || dev.vendor || 'Dispositivo';
+        document.getElementById('modal-spec-os').textContent = dev.os_family || 'Sconosciuto';
+        document.getElementById('modal-spec-score').textContent = `${dev.security_score || 100} / 100`;
+
+        document.getElementById('modal-input-name').value = dev.custom_name || '';
+        document.getElementById('modal-input-category').value = dev.category || 'Altro';
+        document.getElementById('modal-input-notes').value = dev.notes || '';
+
+        // Topology parent select
+        const parentSelect = document.getElementById('modal-input-parent');
+        if (parentSelect) {
+          const gwDev = currentDevices.find(d => d.is_gateway);
+          const hypDev = findHypervisorDevice(currentDevices);
+          
+          let optionsHtml = `<option value="auto">Automatico (Rilevamento Router / Proxmox)</option>`;
+          if (gwDev && gwDev.mac !== dev.mac) {
+            optionsHtml += `<option value="${gwDev.mac}">Router Gateway (${gwDev.custom_name || gwDev.hostname || gwDev.ip})</option>`;
+          }
+          if (hypDev && hypDev.mac !== dev.mac) {
+            optionsHtml += `<option value="${hypDev.mac}">Server Proxmox PVE (${hypDev.custom_name || hypDev.hostname || hypDev.ip})</option>`;
+          }
+          currentDevices.forEach(other => {
+            if (other.mac !== dev.mac && (!gwDev || other.mac !== gwDev.mac) && (!hypDev || other.mac !== hypDev.mac)) {
+              if ((other.category || '').includes('Server') || (other.category || '').includes('PC') || (other.category || '').includes('Router')) {
+                optionsHtml += `<option value="${other.mac}">${escapeHtml(other.custom_name || other.hostname || other.ip)} (${other.ip})</option>`;
+              }
+            }
+          });
+          parentSelect.innerHTML = optionsHtml;
+          parentSelect.value = dev.parent_mac || 'auto';
+        }
+
+        // Services
+        const svcContainer = document.getElementById('modal-services-container');
+        if (dev.services && dev.services.length > 0) {
+          svcContainer.innerHTML = dev.services.map(s => `
+            <div class="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[11px] space-y-0.5">
+              <div class="font-bold text-emerald-600 dark:text-emerald-400">${s.service} (Porta ${s.port})</div>
+              ${s.title ? `<div class="text-slate-800 dark:text-slate-200 font-medium text-[11px]">Titolo: "${escapeHtml(s.title)}"</div>` : ''}
+              ${s.cert_cn ? `<div class="text-blue-600 dark:text-blue-400 font-mono text-[10px]">TLS Cert: CN=${escapeHtml(s.cert_cn)}</div>` : ''}
+              ${s.banner ? `<div class="text-slate-500 font-mono text-[10px] truncate max-w-xs">${escapeHtml(s.banner)}</div>` : ''}
+            </div>
+          `).join('');
+        } else {
+          svcContainer.innerHTML = '<span class="text-slate-500 text-xs">Nessun servizio standard annunciato.</span>';
+        }
+
+        // UPnP & NetBIOS metadata
+        const metaBox = document.getElementById('modal-extra-meta-box');
+        const metaContent = document.getElementById('modal-extra-meta-content');
+        let metaHtml = '';
+
+        if (dev.metadata && dev.metadata.ssdp && dev.metadata.ssdp.upnp_info) {
+          const u = dev.metadata.ssdp.upnp_info;
+          metaHtml += `<div>• UPnP Friendly Name: <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(u.friendly_name || '-')}</strong></div>`;
+          metaHtml += `<div>• UPnP Produttore/Modello: <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(u.manufacturer || '-')} ${escapeHtml(u.model_name || '')}</strong></div>`;
+          if (u.has_upnp_igd) {
+            metaHtml += `<div class="text-rose-600 dark:text-rose-400 font-bold">• [ATTENZIONE] UPnP WANIPConnection (IGD) Rilevato!</div>`;
+          }
+        }
+        if (dev.metadata && dev.metadata.netbios) {
+          const nb = dev.metadata.netbios;
+          if (nb.computer_name) metaHtml += `<div>• NetBIOS Computer Name: <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(nb.computer_name)}</strong></div>`;
+          if (nb.workgroup) metaHtml += `<div>• NetBIOS Workgroup: <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(nb.workgroup)}</strong></div>`;
+        }
+
+        if (metaHtml) {
+          metaContent.innerHTML = metaHtml;
+          metaBox.classList.remove('hidden');
+        } else {
+          metaBox.classList.add('hidden');
+        }
+
+        // Load presence & activity history
+        const histContainer = document.getElementById('modal-history-container');
+        const histStatus = document.getElementById('modal-history-status');
+        histContainer.innerHTML = '<div class="text-slate-400 text-xs py-1">Caricamento eventi...</div>';
+        try {
+          const histRes = await fetch(`/api/devices/${encodeURIComponent(mac)}/history?hours=48`);
+          const historyEvents = await histRes.json();
+          if (historyEvents && historyEvents.length > 0) {
+            histStatus.textContent = `${historyEvents.length} eventi`;
+            histContainer.innerHTML = historyEvents.slice().reverse().map(ev => {
+              const dateStr = new Date(ev.timestamp).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+              let tagColor = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+              if (ev.event_type === 'NEW_DEVICE') tagColor = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+              else if (ev.event_type.includes('ALERT') || ev.event_type.includes('WARN')) tagColor = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+              return `<div class="flex items-center justify-between gap-2 p-1 border-b border-slate-200/40 dark:border-slate-800/40 last:border-none">
+                <span class="text-slate-500 text-[10px] whitespace-nowrap">${dateStr}</span>
+                <span class="text-slate-700 dark:text-slate-300 truncate flex-1">${escapeHtml(ev.message || ev.event_type)}</span>
+                <span class="px-1.5 py-0.2 text-[9px] rounded border ${tagColor} font-semibold">${escapeHtml(ev.event_type)}</span>
+              </div>`;
+            }).join('');
+          } else {
+            histStatus.textContent = 'Nessun evento';
+            histContainer.innerHTML = `<div class="text-slate-400 text-xs py-1">Primo rilevamento: ${dev.first_seen ? new Date(dev.first_seen).toLocaleString('it-IT') : 'N/A'}. Nessun evento critico registrato nelle ultime 48h.</div>`;
+          }
+        } catch (e) {
+          histContainer.innerHTML = '<div class="text-slate-400 text-xs py-1">Impossibile recuperare lo storico.</div>';
+        }
+
+        document.getElementById('device-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error opening device modal:', err);
+      }
+    }
+
+    function closeDeviceModal() {
+      document.getElementById('device-modal').classList.add('hidden');
+      selectedDeviceMac = null;
+      selectedDeviceObj = null;
+    }
+
+    function resetToScannedName() {
+      document.getElementById('modal-input-name').value = '';
+    }
+
+    // Toggle Trust Status
+    async function toggleCurrentDeviceTrust() {
+      if (!selectedDeviceMac || !selectedDeviceObj) return;
+      const newStatus = !selectedDeviceObj.is_trusted;
+      try {
+        await fetch(`/api/devices/${encodeURIComponent(selectedDeviceMac)}/trust`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_trusted: newStatus })
+        });
+        openDeviceModal(selectedDeviceMac);
+        loadAllData();
+      } catch (e) {
+        alert('Errore durante la modifica dello stato di fiducia.');
+      }
+    }
+
+    // Ping Live Tester
+    async function pingCurrentDevice() {
+      if (!selectedDeviceMac) return;
+      const label = document.getElementById('modal-ping-label');
+      label.textContent = 'Ping...';
+      try {
+        const res = await fetch(`/api/devices/${encodeURIComponent(selectedDeviceMac)}/ping`);
+        const data = await res.json();
+        if (data.online && data.latency_ms !== null) {
+          label.textContent = `${data.latency_ms.toFixed(1)} ms`;
+          playChime(700, 0.1);
+        } else {
+          label.textContent = 'No reply';
+        }
+        setTimeout(() => { label.textContent = 'Test Ping'; }, 3000);
+      } catch (e) {
+        label.textContent = 'Errore';
+      }
+    }
+
+    // Wake-on-LAN Trigger
+    async function wakeCurrentDevice() {
+      if (!selectedDeviceMac) return;
+      try {
+        const res = await fetch(`/api/devices/${encodeURIComponent(selectedDeviceMac)}/wake`, { method: 'POST' });
+        const data = await res.json();
+        alert('✓ Pacchetto Magic Wake-on-LAN inviato alla scheda di rete!');
+      } catch (e) {
+        alert('Errore durante l\'invio del pacchetto Wake-on-LAN.');
+      }
+    }
+
+    // Save Customization
+    async function saveDeviceCustomization() {
+      if (!selectedDeviceMac) return;
+      const customName = document.getElementById('modal-input-name').value.trim();
+      const category = document.getElementById('modal-input-category').value;
+      const notes = document.getElementById('modal-input-notes').value.trim();
+      const parentMac = document.getElementById('modal-input-parent') ? document.getElementById('modal-input-parent').value : 'auto';
+
+      try {
+        const resp = await fetch(`/api/devices/${encodeURIComponent(selectedDeviceMac)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            custom_name: customName,
+            category: category,
+            notes: notes,
+            parent_mac: parentMac,
+          })
+        });
+        if (!resp.ok) throw new Error('Save failed');
+        closeDeviceModal();
+        await loadAllData();
+        if (topologyNetwork) {
+          initTopologyGraph();
+        }
+      } catch (err) {
+        alert('Errore durante il salvataggio delle modifiche.');
+      }
+    }
+
+    // Start Scan Button
+    document.getElementById('btn-start-scan').addEventListener('click', async () => {
+      try {
+        document.getElementById('scan-btn-text').textContent = 'Scansione in corso...';
+        document.getElementById('scan-icon').classList.add('animate-spin');
+        document.getElementById('scan-progress-container').classList.remove('hidden');
+        document.getElementById('scan-status-banner').classList.remove('hidden');
+        updateScanProgress('Avvio scansione asincrona...', 5);
+
+        const res = await fetch('/api/scan', { method: 'POST' });
+        const data = await res.json();
+      } catch (e) {
+        finishScanProgress();
+      }
+    });
+
+    function updateScanProgress(msg, percent) {
+      document.getElementById('scan-progress-bar').style.width = `${percent}%`;
+      document.getElementById('scan-status-message').textContent = msg;
+      document.getElementById('scan-percent').textContent = `${percent}%`;
+    }
+
+    function finishScanProgress() {
+      updateScanProgress('Scansione completata!', 100);
+      setTimeout(() => {
+        document.getElementById('scan-progress-container').classList.add('hidden');
+        document.getElementById('scan-status-banner').classList.add('hidden');
+        document.getElementById('scan-btn-text').textContent = 'Scansione Passiva';
+        document.getElementById('scan-icon').classList.remove('animate-spin');
+      }, 1000);
+    }
+
+    // Charts Rendering (Theme Aware)
+    function renderCharts() {
+      if (!currentDevices || currentDevices.length === 0) return;
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+      // Category counts
+      const catCounts = {};
+      currentDevices.forEach(d => {
+        const cat = d.category || 'Altro';
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      });
+
+      // Vendor counts
+      const vendorCounts = {};
+      currentDevices.forEach(d => {
+        const v = d.vendor || 'Sconosciuto';
+        vendorCounts[v] = (vendorCounts[v] || 0) + 1;
+      });
+
+      // Render Category Chart
+      const catCtx = document.getElementById('chart-categories').getContext('2d');
+      if (categoryChart) categoryChart.destroy();
+      categoryChart = new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(catCounts),
+          datasets: [{
+            data: Object.values(catCounts),
+            backgroundColor: [
+              '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#64748b'
+            ],
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+
+      // Render Vendor Chart
+      const sortedVendors = Object.entries(vendorCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+
+      const venCtx = document.getElementById('chart-vendors').getContext('2d');
+      if (vendorChart) vendorChart.destroy();
+      vendorChart = new Chart(venCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedVendors.map(v => v[0].length > 18 ? v[0].slice(0, 18) + '...' : v[0]),
+          datasets: [{
+            data: sortedVendors.map(v => v[1]),
+            backgroundColor: '#3b82f6',
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
+          }
+        }
+      });
+    }
+
+    // Export JSON Button
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      window.open('/api/export/report.json', '_blank');
+    });
+
+    // Filters event listeners
+    document.getElementById('filter-search').addEventListener('input', renderDevicesTable);
+    document.getElementById('filter-category').addEventListener('change', renderDevicesTable);
+    document.getElementById('filter-trust').addEventListener('change', renderDevicesTable);
+    document.getElementById('filter-online').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.getElementById('filter-offline').checked = false;
+      }
+      renderDevicesTable();
+    });
+    document.getElementById('filter-offline').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.getElementById('filter-online').checked = false;
+      }
+      renderDevicesTable();
+    });
+
+    // Telegram Bot Notifications Config
+    async function loadTelegramSettings() {
+      try {
+        const res = await fetch('/api/settings/telegram');
+        const cfg = await res.json();
+        const pill = document.getElementById('telegram-status-pill');
+        const chk = document.getElementById('checkbox-telegram-enabled');
+        const chatIdInput = document.getElementById('input-telegram-chatid');
+        const tokenInput = document.getElementById('input-telegram-token');
+
+        if (chk) chk.checked = !!cfg.enabled;
+        if (chatIdInput && cfg.chat_id) chatIdInput.value = cfg.chat_id;
+        if (tokenInput && cfg.has_token) tokenInput.placeholder = '•••••••••••••••••••• (Configurato)';
+
+        if (pill) {
+          if (cfg.configured && cfg.enabled) {
+            pill.textContent = 'Attivo ✓';
+            pill.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+          } else if (cfg.configured && !cfg.enabled) {
+            pill.textContent = 'Disabilitato ⏸';
+            pill.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+          } else {
+            pill.textContent = 'Non Configurato';
+            pill.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700';
+          }
+        }
+      } catch (e) {
+        console.error('Error loading Telegram settings:', e);
+      }
+    }
+
+    async function saveTelegramSettings() {
+      const tokenInput = document.getElementById('input-telegram-token');
+      const chatIdInput = document.getElementById('input-telegram-chatid');
+      const chk = document.getElementById('checkbox-telegram-enabled');
+      const btn = document.getElementById('btn-save-telegram');
+      const btnText = document.getElementById('btn-save-telegram-text');
+
+      const botToken = tokenInput.value.trim();
+      const chatId = chatIdInput.value.trim();
+      const enabled = chk ? chk.checked : true;
+
+      if (!botToken && !tokenInput.placeholder.includes('Configurato')) {
+        alert('Inserisci il Bot Token fornito da @BotFather.');
+        return;
+      }
+      if (!chatId) {
+        alert('Inserisci il tuo Chat ID Telegram.');
+        return;
+      }
+
+      const origText = btnText ? btnText.textContent : 'Salva';
+      if (btnText) btnText.textContent = 'Salvataggio & Test in corso...';
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/settings/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bot_token: botToken,
+            chat_id: chatId,
+            enabled: enabled
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (data.test_sent) {
+            alert('✅ Configurazione salvata! Messaggio di prova inviato con successo sul tuo Telegram.');
+          } else {
+            alert('⚠️ Configurazione salvata nel database, ma Telegram non ha potuto recapitare il messaggio di test.\n\nVerifica:\n1. Di aver avviato la chat con il bot premendo START\n2. Che il Token e il Chat ID siano corretti\n3. Che ci sia connettività Internet verso telegram.org');
+          }
+          await loadTelegramSettings();
+        } else {
+          alert('Errore durante il salvataggio.');
+        }
+      } catch (err) {
+        alert('Errore di comunicazione col server: ' + err.message);
+      } finally {
+        if (btnText) btnText.textContent = origText;
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    // Auto-Scan Periodic Background Settings
+    async function loadAutoScanSettings() {
+      try {
+        const res = await fetch('/api/config/autoscan');
+        const cfg = await res.json();
+        const chk = document.getElementById('checkbox-autoscan-enabled');
+        const sel = document.getElementById('select-autoscan-interval');
+        const pill = document.getElementById('autoscan-status-pill');
+        const headerPill = document.getElementById('header-autoscan-pill');
+        const headerText = document.getElementById('header-autoscan-text');
+
+        if (chk) chk.checked = !!cfg.enabled;
+        if (sel) sel.value = String(cfg.interval_minutes || 5);
+
+        const statusLabel = cfg.enabled ? `Attiva (Ogni ${cfg.interval_minutes || 5} min)` : 'Disattivata ⏸';
+        if (pill) {
+          pill.textContent = statusLabel;
+          pill.className = cfg.enabled
+            ? 'px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+            : 'px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700';
+        }
+
+        if (headerPill && headerText) {
+          if (cfg.enabled) {
+            headerPill.classList.remove('hidden');
+            headerText.textContent = `Auto: ${cfg.interval_minutes || 5}m`;
+          } else {
+            headerPill.classList.add('hidden');
+          }
+        }
+      } catch (e) {
+        console.error('Error loading auto-scan config:', e);
+      }
+    }
+
+    async function saveAutoScanSettings() {
+      const chk = document.getElementById('checkbox-autoscan-enabled');
+      const sel = document.getElementById('select-autoscan-interval');
+      const btnText = document.getElementById('btn-save-autoscan-text');
+      const enabled = chk ? chk.checked : true;
+      const interval = sel ? parseInt(sel.value, 10) : 5;
+
+      const origText = btnText ? btnText.textContent : 'Salva Impostazioni Scansione';
+      if (btnText) btnText.textContent = 'Salvataggio...';
+
+      try {
+        const res = await fetch('/api/config/autoscan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: enabled, interval_minutes: interval })
+        });
+        if (res.ok) {
+          await loadAutoScanSettings();
+          alert(`✅ Impostazioni salvate! Scansione periodica ${enabled ? `attiva ogni ${interval} minuti.` : 'disattivata.'}`);
+        } else {
+          alert('Errore nel salvataggio delle impostazioni.');
+        }
+      } catch (e) {
+        alert('Errore di connessione: ' + e.message);
+      } finally {
+        if (btnText) btnText.textContent = origText;
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.toString().replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      setupWebSocket();
+      loadAllData();
+      // Poll connection health every 30 seconds
+      setInterval(loadNetworkHealth, 30000);
+    });
+  </script>
+</body>
+</html>

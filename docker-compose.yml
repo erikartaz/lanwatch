@@ -1,0 +1,22 @@
+services:
+  lanwatch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lanwatch:latest
+    container_name: lanwatch
+    restart: unless-stopped
+    # CRITICO PER UNO SCANNER DI RETE:
+    # 'network_mode: host' è indispensabile affinché il container utilizzi direttamente
+    # lo stack di rete dell'host Proxmox/VM (accedendo alla tabella ARP reale del kernel,
+    # ascoltando i pacchetti multicast mDNS/SSDP e raggiungendo le porte della LAN 192.168.1.0/24).
+    network_mode: host
+    environment:
+      - DATA_DIR=/data
+      - TZ=Europe/Rome
+    volumes:
+      # Directory per il database persistente SQLite (lanscanner.db)
+      - ./data:/data
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW

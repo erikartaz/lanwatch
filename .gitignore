@@ -1,0 +1,53 @@
+# ==========================================
+# LANWatch - Git Ignore Configuration
+# ==========================================
+
+# 1. Databases & Sensitive LAN Data (CRITICO: non versionare mai il DB con MAC, IP e nomi di famiglia)
+lanscanner.db
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/
+/data/
+
+# 2. Secrets, API Keys & Environment Variables
+.env
+.env.*
+*.env
+secrets/
+*.pem
+*.key
+*.crt
+*.cert
+
+# 3. Logs & Export Reports
+*.log
+logs/
+*.json.bak
+report.json
+
+# 4. Python Environment & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+build/
+dist/
+wheels/
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# 5. OS & IDE Metadata
+.DS_Store
+Thumbs.db
+ehthumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
