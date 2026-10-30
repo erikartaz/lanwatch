@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: lanwatch:latest
     container_name: lanwatch
     restart: unless-stopped
     # CRITICO PER UNO SCANNER DI RETE:
