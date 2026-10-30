@@ -2432,13 +2432,11 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', file);
-
       try {
         const res = await fetch('/api/database/restore', {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: file,
         });
         const result = await res.json();
         if (res.ok) {

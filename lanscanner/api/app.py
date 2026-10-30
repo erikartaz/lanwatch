@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -424,16 +424,26 @@ async def backup_database():
 
 
 @app.post("/api/database/restore")
-async def restore_database(file: UploadFile = File(...)):
-    """Upload and restore a SQLite database file."""
+async def restore_database(request: Request):
+    """Upload and restore a SQLite database file via raw octet-stream."""
     import shutil
     import sqlite3
     from lanscanner.core.storage import DB_PATH
 
+    body = await request.body()
+    if not body or len(body) < 100:
+        raise HTTPException(status_code=400, detail="File database vuoto o corrotto")
+
+    if not body.startswith(b"SQLite format 3\x00"):
+        raise HTTPException(
+            status_code=400,
+            detail="Il file caricato non sembra essere un database SQLite valido (firma mancante)."
+        )
+
     temp_path = DB_PATH.with_suffix(".upload_tmp")
     try:
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        with open(temp_path, "wb") as f:
+            f.write(body)
 
         # Verify it is a valid SQLite DB with the devices table
         test_conn = sqlite3.connect(temp_path)
