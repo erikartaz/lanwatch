@@ -218,25 +218,27 @@
   <header class="border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-40 transition-colors">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
       <!-- Main Header Row -->
-      <div class="flex items-center justify-between gap-2 sm:gap-4">
+      <div class="flex items-center justify-between gap-3 sm:gap-4 flex-nowrap">
         <!-- Logo & Branding -->
-        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <div class="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-md shadow-emerald-500/20 text-white shrink-0">
             <i data-lucide="shield-check" class="w-5 h-5 sm:w-6 sm:h-6"></i>
           </div>
-          <div class="min-w-0">
+          <div class="flex flex-col justify-center">
             <div class="flex items-center gap-1.5 sm:gap-2">
-              <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">LANWatch</span>
+              <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">LANWatch</span>
               <span class="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">Sentinel</span>
-            </div>
-            <!-- Subnet & Gateway info (Desktop) -->
-            <div class="hidden sm:flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
-              <span id="header-net-pill" class="flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300">
-                <i data-lucide="network" class="w-3 h-3 text-emerald-500"></i> Rilevamento rete...
-              </span>
-              <span id="header-health-pill" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+              <!-- Desktop Network Health Pill (Inline with brand title) -->
+              <span id="header-health-pill" class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono whitespace-nowrap shrink-0">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="health-text" class="text-slate-600 dark:text-slate-300">GW: -- ms • Net: -- ms</span>
+              </span>
+            </div>
+            <!-- Subnet & Gateway info (Desktop subtitle) -->
+            <div class="hidden sm:flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 whitespace-nowrap">
+              <span id="header-net-pill" class="flex items-center gap-1">
+                <i data-lucide="network" class="w-3 h-3 text-emerald-500 shrink-0"></i>
+                <span>Rilevamento rete...</span>
               </span>
             </div>
           </div>
@@ -245,62 +247,62 @@
         <!-- Action Controls -->
         <div class="flex items-center gap-1.5 sm:gap-2 no-print shrink-0">
           <!-- Mobile Network Health Pill (Ultra-compact) -->
-          <span id="header-health-pill-mobile" class="flex sm:hidden items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+          <span id="header-health-pill-mobile" class="flex sm:hidden items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono whitespace-nowrap">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span id="health-text-mobile" class="text-slate-700 dark:text-slate-300">Net OK</span>
           </span>
 
           <!-- Audio Chime Toggle -->
-          <button id="btn-audio-toggle" onclick="toggleAudioChime()" class="p-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Attiva/Disattiva avvisi sonori">
+          <button id="btn-audio-toggle" onclick="toggleAudioChime()" class="p-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors shrink-0" title="Attiva/Disattiva avvisi sonori">
             <i data-lucide="bell" class="w-3.5 h-3.5" id="audio-icon"></i>
           </button>
 
           <!-- Settings Button -->
-          <button onclick="switchTab('settings')" class="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Impostazioni">
+          <button onclick="switchTab('settings')" class="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors shrink-0" title="Impostazioni">
             <i data-lucide="settings" class="w-3.5 h-3.5 text-sky-500"></i>
-            <span class="hidden md:inline">Impostazioni</span>
+            <span class="hidden xl:inline">Impostazioni</span>
           </button>
 
           <!-- Theme Toggle Button -->
-          <button id="btn-theme-toggle" onclick="toggleTheme()" class="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Tema">
+          <button id="btn-theme-toggle" onclick="toggleTheme()" class="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors shrink-0" title="Tema">
             <i data-lucide="sun" class="w-3.5 h-3.5 hidden dark:inline text-amber-400" id="theme-icon-sun"></i>
             <i data-lucide="moon" class="w-3.5 h-3.5 inline dark:hidden text-slate-600" id="theme-icon-moon"></i>
-            <span id="theme-btn-text" class="hidden md:inline">Tema</span>
+            <span id="theme-btn-text" class="hidden xl:inline">Tema</span>
           </button>
 
           <!-- Desktop indicators & secondary actions -->
-          <div id="ws-indicator" class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60">
+          <div id="ws-indicator" class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60 shrink-0 whitespace-nowrap">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span id="ws-status-text">Live</span>
           </div>
 
-          <div id="header-autoscan-pill" class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60">
+          <div id="header-autoscan-pill" class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60 shrink-0 whitespace-nowrap">
             <i data-lucide="timer" class="w-3.5 h-3.5 text-emerald-500"></i>
             <span id="header-autoscan-text">Auto: 5m</span>
           </div>
 
           <!-- Export JSON & Print (Desktop only) -->
-          <button id="btn-export-json" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Export</span>
+          <button id="btn-export-json" class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors shrink-0">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> <span class="hidden xl:inline">Export</span>
           </button>
-          <button onclick="window.print()" class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
+          <button onclick="window.print()" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors shrink-0" title="Stampa inventario">
             <i data-lucide="printer" class="w-3.5 h-3.5"></i>
           </button>
 
           <!-- Scan Button -->
-          <button id="btn-start-scan" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm shadow-emerald-600/30 transition-all">
+          <button id="btn-start-scan" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm shadow-emerald-600/30 transition-all shrink-0 whitespace-nowrap">
             <i data-lucide="radar" class="w-3.5 h-3.5 sm:w-4 sm:h-4" id="scan-icon"></i>
             <span id="scan-btn-text" class="hidden sm:inline">Scansione Passiva</span>
             <span class="sm:hidden">Scansiona</span>
           </button>
 
           <!-- User / Logout Pill -->
-          <div id="auth-user-pill" class="hidden items-center gap-1 pl-1.5 sm:pl-2 border-l border-slate-300 dark:border-slate-700">
-            <span class="hidden sm:flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+          <div id="auth-user-pill" class="hidden items-center gap-1 pl-1.5 sm:pl-2 border-l border-slate-300 dark:border-slate-700 shrink-0">
+            <span class="hidden sm:flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shrink-0">
               <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-500"></i>
               <span id="nav-username">admin</span>
             </span>
-            <button onclick="handleLogout()" class="p-2 text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors" title="Disconnetti sessione">
+            <button onclick="handleLogout()" class="p-2 text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors shrink-0" title="Disconnetti sessione">
               <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -313,7 +315,7 @@
           <i data-lucide="network" class="w-3 h-3 text-emerald-500 shrink-0"></i>
           <span>Subnet: 192.168.1.0/24</span>
         </span>
-        <span class="truncate ml-2 text-slate-600 dark:text-slate-300">GW: 192.168.1.254</span>
+        <span id="header-gw-mobile" class="truncate ml-2 text-slate-600 dark:text-slate-300">GW: 192.168.1.254</span>
       </div>
     </div>
 
@@ -1564,8 +1566,10 @@
         const headerPill = document.getElementById('header-net-pill');
         if (headerPill) {
           headerPill.innerHTML = `
-            <i data-lucide="network" class="w-3.5 h-3.5 text-emerald-500 inline"></i>
-            Subnet: <span class="font-semibold text-emerald-600 dark:text-emerald-400">${currentNetwork.cidr}</span> • Gateway: <span class="font-semibold text-slate-700 dark:text-slate-200">${currentNetwork.gateway}</span>
+            <i data-lucide="network" class="w-3.5 h-3.5 text-emerald-500 inline shrink-0"></i>
+            <span class="whitespace-nowrap">Subnet: <strong class="font-semibold text-emerald-600 dark:text-emerald-400">${currentNetwork.cidr}</strong></span>
+            <span class="text-slate-300 dark:text-slate-600 px-1">•</span>
+            <span class="whitespace-nowrap">Gateway: <strong class="font-semibold text-slate-700 dark:text-slate-200">${currentNetwork.gateway}</strong></span>
           `;
         }
         const mobNetPill = document.getElementById('header-net-pill-mobile');
@@ -1574,6 +1578,10 @@
             <i data-lucide="network" class="w-3 h-3 text-emerald-500 shrink-0"></i>
             <span>Subnet: ${currentNetwork.cidr}</span>
           `;
+        }
+        const mobGw = document.getElementById('header-gw-mobile');
+        if (mobGw) {
+          mobGw.textContent = `GW: ${currentNetwork.gateway}`;
         }
 
         // Update health pill
