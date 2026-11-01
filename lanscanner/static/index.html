@@ -42,6 +42,23 @@
       height: 600px;
       outline: none;
     }
+    @media (max-width: 640px) {
+      #topology-network {
+        height: 400px;
+      }
+    }
+
+    /* Mobile touch and smooth scrolling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
     /* Modern Glassmorphic Tooltip for Vis.js Topology Graph */
     div.vis-tooltip {
@@ -84,18 +101,18 @@
 <body class="min-h-full flex flex-col font-sans antialiased bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 selection:bg-emerald-500 selection:text-white transition-colors duration-200">
 
   <!-- High-Tech Glassmorphic Sentinel Authentication Modal / Overlay -->
-  <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl transition-all duration-300 hidden">
+  <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-xl transition-all duration-300 hidden">
     <!-- Ambient Cyber Glows -->
     <div class="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-2xl shadow-emerald-950/40 space-y-6">
+    <div class="relative w-full max-w-sm sm:max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl shadow-emerald-950/40 space-y-5 sm:space-y-6">
       <!-- Sentinel Brand Header -->
-      <div class="text-center space-y-2">
-        <div class="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 items-center justify-center shadow-lg shadow-emerald-500/30 text-white mb-2">
-          <i data-lucide="shield-check" class="w-9 h-9" id="auth-shield-icon"></i>
+      <div class="text-center space-y-1.5 sm:space-y-2">
+        <div class="inline-flex h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 items-center justify-center shadow-lg shadow-emerald-500/30 text-white mb-1 sm:mb-2">
+          <i data-lucide="shield-check" class="w-8 h-8 sm:w-9 sm:h-9" id="auth-shield-icon"></i>
         </div>
-        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
+        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
           LANWatch <span class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Sentinel</span>
         </h2>
         <p id="auth-card-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -198,82 +215,105 @@
   </div>
 
   <!-- Header -->
-  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-40 transition-colors">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-3">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
-          <i data-lucide="shield-check" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">LANWatch</span>
-            <span class="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Sentinel Pro</span>
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-40 transition-colors">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+      <!-- Main Header Row -->
+      <div class="flex items-center justify-between gap-2 sm:gap-4">
+        <!-- Logo & Branding -->
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div class="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-md shadow-emerald-500/20 text-white shrink-0">
+            <i data-lucide="shield-check" class="w-5 h-5 sm:w-6 sm:h-6"></i>
           </div>
-          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            <span id="header-net-pill" class="flex items-center gap-1 font-mono text-[11px] text-slate-600 dark:text-slate-300">
-              <i data-lucide="network" class="w-3 h-3 text-emerald-500"></i> Rilevamento rete...
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">LANWatch</span>
+              <span class="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">Sentinel</span>
+            </div>
+            <!-- Subnet & Gateway info (Desktop) -->
+            <div class="hidden sm:flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
+              <span id="header-net-pill" class="flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300">
+                <i data-lucide="network" class="w-3 h-3 text-emerald-500"></i> Rilevamento rete...
+              </span>
+              <span id="header-health-pill" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="health-text" class="text-slate-600 dark:text-slate-300">GW: -- ms • Net: -- ms</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="flex items-center gap-1.5 sm:gap-2 no-print shrink-0">
+          <!-- Mobile Network Health Pill (Ultra-compact) -->
+          <span id="header-health-pill-mobile" class="flex sm:hidden items-center gap-1 px-2 py-1 rounded-lg text-[10px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="health-text-mobile" class="text-slate-700 dark:text-slate-300">Net OK</span>
+          </span>
+
+          <!-- Audio Chime Toggle -->
+          <button id="btn-audio-toggle" onclick="toggleAudioChime()" class="p-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Attiva/Disattiva avvisi sonori">
+            <i data-lucide="bell" class="w-3.5 h-3.5" id="audio-icon"></i>
+          </button>
+
+          <!-- Settings Button -->
+          <button onclick="switchTab('settings')" class="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Impostazioni">
+            <i data-lucide="settings" class="w-3.5 h-3.5 text-sky-500"></i>
+            <span class="hidden md:inline">Impostazioni</span>
+          </button>
+
+          <!-- Theme Toggle Button -->
+          <button id="btn-theme-toggle" onclick="toggleTheme()" class="flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Tema">
+            <i data-lucide="sun" class="w-3.5 h-3.5 hidden dark:inline text-amber-400" id="theme-icon-sun"></i>
+            <i data-lucide="moon" class="w-3.5 h-3.5 inline dark:hidden text-slate-600" id="theme-icon-moon"></i>
+            <span id="theme-btn-text" class="hidden md:inline">Tema</span>
+          </button>
+
+          <!-- Desktop indicators & secondary actions -->
+          <div id="ws-indicator" class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="ws-status-text">Live</span>
+          </div>
+
+          <div id="header-autoscan-pill" class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60">
+            <i data-lucide="timer" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span id="header-autoscan-text">Auto: 5m</span>
+          </div>
+
+          <!-- Export JSON & Print (Desktop only) -->
+          <button id="btn-export-json" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Export</span>
+          </button>
+          <button onclick="window.print()" class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          </button>
+
+          <!-- Scan Button -->
+          <button id="btn-start-scan" class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm shadow-emerald-600/30 transition-all">
+            <i data-lucide="radar" class="w-3.5 h-3.5 sm:w-4 sm:h-4" id="scan-icon"></i>
+            <span id="scan-btn-text" class="hidden sm:inline">Scansione Passiva</span>
+            <span class="sm:hidden">Scansiona</span>
+          </button>
+
+          <!-- User / Logout Pill -->
+          <div id="auth-user-pill" class="hidden items-center gap-1 pl-1.5 sm:pl-2 border-l border-slate-300 dark:border-slate-700">
+            <span class="hidden sm:flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+              <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span id="nav-username">admin</span>
             </span>
-            <!-- Live Gateway & Internet Health Pill -->
-            <span id="header-health-pill" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span id="health-text" class="text-slate-600 dark:text-slate-300">GW: -- ms • Net: -- ms</span>
-            </span>
+            <button onclick="handleLogout()" class="p-2 text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors" title="Disconnetti sessione">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Action buttons -->
-      <div class="flex items-center gap-2 sm:gap-2.5 no-print">
-        <!-- Audio Chime Toggle -->
-        <button id="btn-audio-toggle" onclick="toggleAudioChime()" class="flex items-center p-2 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Attiva/Disattiva avvisi sonori">
-          <i data-lucide="bell" class="w-3.5 h-3.5" id="audio-icon"></i>
-        </button>
-
-        <!-- Settings Button -->
-        <button onclick="switchTab('settings')" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Impostazioni & Notifiche Telegram">
-          <i data-lucide="settings" class="w-3.5 h-3.5 text-sky-500"></i> <span class="hidden md:inline">Impostazioni</span>
-        </button>
-
-        <!-- Theme Toggle Button -->
-        <button id="btn-theme-toggle" onclick="toggleTheme()" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors" title="Cambia tema chiaro/scuro">
-          <i data-lucide="sun" class="w-3.5 h-3.5 hidden dark:inline text-amber-400" id="theme-icon-sun"></i>
-          <i data-lucide="moon" class="w-3.5 h-3.5 inline dark:hidden text-slate-600" id="theme-icon-moon"></i>
-          <span id="theme-btn-text" class="hidden md:inline">Tema</span>
-        </button>
-
-        <div id="ws-indicator" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="ws-status-text">Live</span>
-        </div>
-
-        <div id="header-autoscan-pill" class="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700/60" title="Scansione periodica continua in background">
-          <i data-lucide="timer" class="w-3.5 h-3.5 text-emerald-500"></i>
-          <span id="header-autoscan-text">Auto: 5m</span>
-        </div>
-
-        <button id="btn-export-json" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Export</span> JSON
-        </button>
-
-        <button onclick="window.print()" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors">
-          <i data-lucide="printer" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Stampa</span>
-        </button>
-
-        <button id="btn-start-scan" class="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-lg shadow-emerald-600/25 transition-all">
-          <i data-lucide="radar" class="w-4 h-4" id="scan-icon"></i>
-          <span id="scan-btn-text">Scansione Passiva</span>
-        </button>
-
-        <!-- User / Logout Pill -->
-        <div id="auth-user-pill" class="hidden items-center gap-1.5 pl-2 border-l border-slate-300 dark:border-slate-700">
-          <span class="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-            <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-500"></i>
-            <span id="nav-username">admin</span>
-          </span>
-          <button onclick="handleLogout()" class="p-1.5 text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors" title="Disconnetti sessione">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
+      <!-- Mobile Sub-Bar: Subnet & Gateway info -->
+      <div class="flex sm:hidden items-center justify-between pt-2 mt-2 border-t border-slate-100 dark:border-slate-800/80 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+        <span id="header-net-pill-mobile" class="flex items-center gap-1 truncate">
+          <i data-lucide="network" class="w-3 h-3 text-emerald-500 shrink-0"></i>
+          <span>Subnet: 192.168.1.0/24</span>
+        </span>
+        <span class="truncate ml-2 text-slate-600 dark:text-slate-300">GW: 192.168.1.254</span>
       </div>
     </div>
 
@@ -306,107 +346,109 @@
   <!-- Main Content -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
 
-    <!-- Top KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Top KPI Cards (Responsive 2x2 grid on mobile, 4 columns on desktop) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
       <!-- Total Devices -->
-      <div onclick="switchTab('inventory')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-blue-500/60 dark:hover:border-blue-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire l'Inventario Tecnico">
+      <div onclick="switchTab('inventory')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:border-blue-500/60 dark:hover:border-blue-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire l'Inventario Tecnico">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors">Dispositivi Attivi</span>
-          <div class="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
-            <i data-lucide="devices" class="w-5 h-5"></i>
+          <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors truncate">Dispositivi</span>
+          <div class="p-1.5 sm:p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0">
+            <i data-lucide="devices" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpi-total-devices" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">--</span>
-          <span class="text-xs text-emerald-600 dark:text-emerald-400 flex items-center">
-            <i data-lucide="wifi" class="w-3 h-3 mr-0.5"></i> online
+        <div class="mt-1.5 sm:mt-2 flex items-baseline gap-1.5">
+          <span id="kpi-total-devices" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">--</span>
+          <span class="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 flex items-center">
+            <i data-lucide="wifi" class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5"></i> online
           </span>
         </div>
-        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="kpi-devices-subtitle">Inventario LAN sincronizzato</p>
+        <p class="mt-0.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate" id="kpi-devices-subtitle">Inventario sincronizzato</p>
       </div>
 
       <!-- Security Health Score -->
-      <div onclick="switchTab('security')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-emerald-500/60 dark:hover:border-emerald-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire il Security Assessment Passivo">
+      <div onclick="switchTab('security')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:border-emerald-500/60 dark:hover:border-emerald-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire il Security Assessment Passivo">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-emerald-500 transition-colors">Posture Sicurezza LAN</span>
-          <div id="kpi-score-icon-box" class="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-emerald-500 transition-colors truncate">Posture Sicurezza</span>
+          <div id="kpi-score-icon-box" class="p-1.5 sm:p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0">
+            <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpi-security-score" class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">--</span>
-          <span class="text-xs text-slate-400 font-mono">/ 100</span>
-          <span id="kpi-grade-badge" class="ml-auto px-2 py-0.5 text-xs font-bold rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Grado A</span>
+        <div class="mt-1.5 sm:mt-2 flex items-baseline gap-1.5">
+          <span id="kpi-security-score" class="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">--</span>
+          <span class="text-[10px] sm:text-xs text-slate-400 font-mono">/100</span>
+          <span id="kpi-grade-badge" class="ml-auto px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Grado A</span>
         </div>
-        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="kpi-score-label">Valutazione passiva della rete</p>
+        <p class="mt-0.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate" id="kpi-score-label">Valutazione rete</p>
       </div>
 
       <!-- Vulnerabilities Count -->
-      <div onclick="switchTab('security')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-amber-500/60 dark:hover:border-amber-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire il Security Assessment Passivo">
+      <div onclick="switchTab('security')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:border-amber-500/60 dark:hover:border-amber-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire il Security Assessment Passivo">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-amber-500 transition-colors">Rilievi di Sicurezza</span>
-          <div class="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-all">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-amber-500 transition-colors truncate">Rilievi Sicurezza</span>
+          <div class="p-1.5 sm:p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-all shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpi-findings-total" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">0</span>
-          <span class="text-xs text-slate-500 dark:text-slate-400">anomalie passive</span>
+        <div class="mt-1.5 sm:mt-2 flex items-baseline gap-1.5">
+          <span id="kpi-findings-total" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">0</span>
+          <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">anomalie</span>
         </div>
-        <div class="mt-2 flex items-center gap-1.5 text-[11px]" id="kpi-findings-badges">
-          <span class="px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">0 Critici</span>
-          <span class="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">0 Alti</span>
-          <span class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">0 Medi</span>
+        <div class="mt-1.5 flex items-center gap-1 text-[10px] flex-wrap" id="kpi-findings-badges">
+          <span class="px-1.5 py-0.2 rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">0 Critici</span>
+          <span class="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">0 Medi</span>
         </div>
       </div>
 
       <!-- Presence & Family / Smart Home Tracker -->
-      <div onclick="switchTab('events')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-purple-500/60 dark:hover:border-purple-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire Log & Presenze">
+      <div onclick="switchTab('events')" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:border-purple-500/60 dark:hover:border-purple-500/60 hover:shadow-md transition-all cursor-pointer select-none active:scale-[0.99] group" title="Clicca per aprire Log & Presenze">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-purple-500 transition-colors">Presenza & Smart Home</span>
-          <div class="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
-            <i data-lucide="user-check" class="w-5 h-5"></i>
+          <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-purple-500 transition-colors truncate">Presenze & IoT</span>
+          <div class="p-1.5 sm:p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all shrink-0">
+            <i data-lucide="user-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
           </div>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
-          <span id="kpi-presence-count" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">--</span>
-          <span class="text-xs text-slate-500 dark:text-slate-400">mobile a casa</span>
+        <div class="mt-1.5 sm:mt-2 flex items-baseline gap-1.5">
+          <span id="kpi-presence-count" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">--</span>
+          <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">a casa</span>
         </div>
-        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" id="kpi-presence-subtitle"><span id="kpi-iot-badge">--</span> device IoT attivi</p>
+        <p class="mt-0.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate" id="kpi-presence-subtitle"><span id="kpi-iot-badge">--</span> device IoT</p>
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="flex border-b border-slate-200 dark:border-slate-800 space-x-4 sm:space-x-6 text-sm font-medium overflow-x-auto no-print">
-      <button id="tab-btn-inventory" onclick="switchTab('inventory')" class="pb-3 border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 whitespace-nowrap">
-        <i data-lucide="list" class="w-4 h-4"></i> Inventario Tecnico
-        <span id="tab-badge-inventory" class="text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full font-mono">0</span>
+    <!-- Navigation Tabs (Touch-friendly & Smooth scrolling on mobile) -->
+    <div class="flex border-b border-slate-200 dark:border-slate-800 space-x-2 sm:space-x-6 text-xs sm:text-sm font-medium overflow-x-auto no-scrollbar py-1 no-print">
+      <button id="tab-btn-inventory" onclick="switchTab('inventory')" class="pb-2.5 sm:pb-3 border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap px-1">
+        <i data-lucide="list" class="w-4 h-4"></i> Inventario
+        <span id="tab-badge-inventory" class="text-[10px] sm:text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full font-mono">0</span>
       </button>
-      <button id="tab-btn-topology" onclick="switchTab('topology')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
-        <i data-lucide="git-fork" class="w-4 h-4 text-blue-500"></i> Mappa Topologica
+      <button id="tab-btn-topology" onclick="switchTab('topology')" class="pb-2.5 sm:pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1.5 sm:gap-2 transition-colors whitespace-nowrap px-1">
+        <i data-lucide="git-fork" class="w-4 h-4 text-blue-500"></i> Topologia
       </button>
-      <button id="tab-btn-security" onclick="switchTab('security')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
-        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i> Security Assessment Passivo
-        <span id="tab-badge-security" class="text-xs bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono">0</span>
+      <button id="tab-btn-security" onclick="switchTab('security')" class="pb-2.5 sm:pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1.5 sm:gap-2 transition-colors whitespace-nowrap px-1">
+        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i> Sicurezza
+        <span id="tab-badge-security" class="text-[10px] sm:text-xs bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full font-mono">0</span>
       </button>
-      <button id="tab-btn-analytics" onclick="switchTab('analytics')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
-        <i data-lucide="pie-chart" class="w-4 h-4"></i> Statistiche & OUI
+      <button id="tab-btn-analytics" onclick="switchTab('analytics')" class="pb-2.5 sm:pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1.5 sm:gap-2 transition-colors whitespace-nowrap px-1">
+        <i data-lucide="pie-chart" class="w-4 h-4"></i> Statistiche
       </button>
-      <button id="tab-btn-events" onclick="switchTab('events')" class="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2 transition-colors whitespace-nowrap">
+      <button id="tab-btn-events" onclick="switchTab('events')" class="pb-2.5 sm:pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1.5 sm:gap-2 transition-colors whitespace-nowrap px-1">
         <i data-lucide="activity" class="w-4 h-4"></i> Log & Presenze
       </button>
     </div>
 
     <!-- TAB 1: INVENTARIO TECNICO -->
-    <div id="tab-content-inventory" class="space-y-4">
+    <div id="tab-content-inventory" class="space-y-3 sm:space-y-4">
       <!-- Search & Filters Toolbar -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm no-print">
-        <div class="relative flex-1">
-          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-          <input type="text" id="filter-search" placeholder="Cerca per IP, MAC, Hostname, Produttore o Applicazione..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500">
+      <div class="bg-white dark:bg-slate-900/80 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 no-print">
+        <!-- Search input -->
+        <div class="relative w-full">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3"></i>
+          <input type="text" id="filter-search" placeholder="Cerca per IP, MAC, Hostname, Produttore o Applicazione..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2 sm:py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-medium transition-all">
         </div>
-        <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <select id="filter-category" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500">
+
+        <!-- Filter Selects & Checkboxes -->
+        <div class="grid grid-cols-2 sm:flex sm:items-center gap-2">
+          <select id="filter-category" class="col-span-2 sm:col-span-1 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500 font-medium truncate">
             <option value="">Tutte le Categorie</option>
             <option value="Router / Gateway">Router / Gateway</option>
             <option value="Virtualizzazione / Server">Virtualizzazione (Proxmox/PVE)</option>
@@ -421,57 +463,83 @@
             <option value="Computer / PC Desktop">Computer / PC</option>
           </select>
 
-          <select id="filter-trust" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500">
+          <select id="filter-trust" class="col-span-2 sm:col-span-1 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500 font-medium">
             <option value="">Tutti i Dispositivi</option>
             <option value="trusted">Solo Fidati ✓</option>
             <option value="untrusted">Da Verificare ⚠️</option>
           </select>
 
-          <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-800 cursor-pointer select-none whitespace-nowrap hover:border-emerald-500/50 transition-colors">
+          <label class="flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-800 cursor-pointer select-none whitespace-nowrap hover:border-emerald-500/50 transition-colors">
             <input type="checkbox" id="filter-online" class="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-emerald-500 focus:ring-0">
-            Solo Online
+            <span>Solo Online</span>
           </label>
-          <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-800 cursor-pointer select-none whitespace-nowrap hover:border-slate-400 transition-colors">
+          <label class="flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-800 cursor-pointer select-none whitespace-nowrap hover:border-slate-400 transition-colors">
             <input type="checkbox" id="filter-offline" class="rounded bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-500 focus:ring-0">
-            Solo Offline
+            <span>Solo Offline</span>
           </label>
         </div>
       </div>
 
-      <!-- Devices Grid / Table Container -->
-      <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-            <thead class="bg-slate-100 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800 text-[11px]">
-              <tr>
-                <th onclick="sortDevices('name')" class="py-3 px-4 cursor-pointer hover:text-emerald-500 transition-colors select-none">
-                  Dispositivo & Identità <span id="sort-name" class="text-[10px] opacity-75">▲</span>
-                </th>
-                <th onclick="sortDevices('ip')" class="py-3 px-4 cursor-pointer hover:text-emerald-500 transition-colors select-none">
-                  Indirizzo IP <span id="sort-ip" class="text-[10px] text-emerald-500 font-bold">▲</span>
-                </th>
-                <th class="py-3 px-4">MAC & Produttore (OUI)</th>
-                <th onclick="sortDevices('category')" class="py-3 px-4 cursor-pointer hover:text-emerald-500 transition-colors select-none">
-                  Categoria & Sistema <span id="sort-category" class="text-[10px] opacity-75">▲</span>
-                </th>
-                <th class="py-3 px-4">Servizi & Accesso Rapido</th>
-                <th onclick="sortDevices('score')" class="py-3 px-4 text-center cursor-pointer hover:text-emerald-500 transition-colors select-none">
-                  Score <span id="sort-score" class="text-[10px] opacity-75">▲</span>
-                </th>
-                <th class="py-3 px-4 text-right no-print">Azioni</th>
-              </tr>
-            </thead>
-            <tbody id="devices-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-normal">
-              <tr>
-                <td colspan="7" class="py-8 text-center text-slate-400">
-                  <div class="flex flex-col items-center justify-center gap-2">
-                    <i data-lucide="loader" class="w-6 h-6 animate-spin text-emerald-500"></i>
-                    <span>Caricamento inventario dispositivi in corso...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- Modern View Mode Toolbar & Column Headers -->
+      <div class="flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 px-1 pt-1">
+        <!-- View Toggle Buttons: Row List vs Grid Tiles -->
+        <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/80">
+          <button id="view-mode-rows" onclick="setViewMode('rows')" class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs" title="Vista Elenco Moderno">
+            <i data-lucide="list" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span class="hidden sm:inline">Elenco</span>
+          </button>
+          <button id="view-mode-tiles" onclick="setViewMode('tiles')" class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" title="Vista Mattonelle Homelab">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Mattonelle</span>
+          </button>
+        </div>
+
+        <!-- Sorting Selector -->
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] hidden sm:inline text-slate-400">Ordina per:</span>
+          <select id="select-sort" onchange="handleSortSelect(this.value)" class="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium">
+            <option value="ip-asc">IP (Crescente)</option>
+            <option value="ip-desc">IP (Decrescente)</option>
+            <option value="name-asc">Nome (A - Z)</option>
+            <option value="name-desc">Nome (Z - A)</option>
+            <option value="score-desc">Score (Più Sicuri)</option>
+            <option value="score-asc">Score (Meno Sicuri)</option>
+            <option value="category-asc">Categoria</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Desktop Modern Column Header Bar (Row view only) -->
+      <div id="desktop-grid-header" class="hidden md:grid grid-cols-12 gap-3 px-4 py-2.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none bg-slate-100/60 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+        <div class="col-span-4 cursor-pointer hover:text-emerald-500 transition-colors flex items-center gap-1" onclick="handleSortSelect(sortColumn === 'name' && sortDirection === 1 ? 'name-desc' : 'name-asc')">
+          <span>Dispositivo & Identità</span>
+          <span id="sort-ind-name" class="text-[9px]"></span>
+        </div>
+        <div class="col-span-2 cursor-pointer hover:text-emerald-500 transition-colors flex items-center gap-1" onclick="handleSortSelect(sortColumn === 'ip' && sortDirection === 1 ? 'ip-desc' : 'ip-asc')">
+          <span>Indirizzo IP</span>
+          <span id="sort-ind-ip" class="text-[9px]">▲</span>
+        </div>
+        <div class="col-span-2 cursor-pointer hover:text-emerald-500 transition-colors flex items-center gap-1" onclick="handleSortSelect(sortColumn === 'category' && sortDirection === 1 ? 'category-desc' : 'category-asc')">
+          <span>Categoria</span>
+          <span id="sort-ind-category" class="text-[9px]"></span>
+        </div>
+        <div class="col-span-2">
+          <span>Servizi Rete</span>
+        </div>
+        <div class="col-span-1 text-center cursor-pointer hover:text-emerald-500 transition-colors" onclick="handleSortSelect(sortColumn === 'score' && sortDirection === -1 ? 'score-asc' : 'score-desc')">
+          <span>Score</span>
+          <span id="sort-ind-score" class="text-[9px]"></span>
+        </div>
+        <div class="col-span-1 text-right">
+          <span>Azioni</span>
+        </div>
+      </div>
+
+      <!-- Devices Modern HTML5 Container (Populated dynamically) -->
+      <div id="devices-container" class="space-y-2.5">
+        <div class="py-16 text-center text-slate-400 flex flex-col items-center justify-center gap-3 bg-white dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
+          <i data-lucide="loader" class="w-8 h-8 animate-spin text-emerald-500"></i>
+          <span class="text-xs font-medium">Caricamento inventario dispositivi in corso...</span>
         </div>
       </div>
     </div>
@@ -871,42 +939,42 @@
   </main>
 
   <!-- Device Detail Modal Drawer -->
-  <div id="device-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl text-slate-800 dark:text-slate-100">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-3">
-          <div id="modal-device-icon" class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <i data-lucide="server" class="w-6 h-6"></i>
+  <div id="device-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[94vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl text-slate-800 dark:text-slate-100">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div id="modal-device-icon" class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <i data-lucide="server" class="w-5 h-5 sm:w-6 sm:h-6"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 id="modal-device-title" class="text-base font-bold text-slate-900 dark:text-white">Dettaglio Dispositivo</h3>
-              <span id="modal-trust-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"></span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h3 id="modal-device-title" class="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">Dettaglio Dispositivo</h3>
+              <span id="modal-trust-badge" class="px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-wider"></span>
             </div>
-            <p id="modal-device-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-mono">192.168.1.X • MAC</p>
+            <p id="modal-device-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">192.168.1.X • MAC</p>
           </div>
         </div>
-        <button onclick="closeDeviceModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+        <button onclick="closeDeviceModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <!-- Quick Actions Toolbar (WoL, Ping, Web UI, Trust) -->
-      <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-2">
+      <div class="bg-slate-50 dark:bg-slate-950 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
           <!-- Web UI button -->
-          <a id="modal-btn-webui" href="#" target="_blank" class="px-3 py-1.5 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm transition-all flex items-center gap-1.5 hidden">
+          <a id="modal-btn-webui" href="#" target="_blank" class="flex-1 sm:flex-none px-3 py-1.5 font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 hidden">
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i> <span id="modal-webui-label">Apri Web UI</span>
           </a>
 
           <!-- Ping Test button -->
-          <button id="modal-btn-ping" onclick="pingCurrentDevice()" class="px-3 py-1.5 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5">
+          <button id="modal-btn-ping" onclick="pingCurrentDevice()" class="flex-1 sm:flex-none px-3 py-1.5 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center justify-center gap-1.5">
             <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-500"></i>
             <span id="modal-ping-label">Test Ping</span>
           </button>
 
           <!-- Wake-on-LAN button -->
-          <button id="modal-btn-wol" onclick="wakeCurrentDevice()" class="px-3 py-1.5 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5" title="Invia Magic Packet Wake-on-LAN">
+          <button id="modal-btn-wol" onclick="wakeCurrentDevice()" class="flex-1 sm:flex-none px-3 py-1.5 font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors flex items-center justify-center gap-1.5" title="Invia Magic Packet Wake-on-LAN">
             <i data-lucide="power" class="w-3.5 h-3.5 text-amber-500"></i> WoL
           </button>
         </div>
@@ -1493,10 +1561,20 @@
           return;
         }
         currentNetwork = await netRes.json();
-        document.getElementById('header-net-pill').innerHTML = `
-          <i data-lucide="network" class="w-3.5 h-3.5 text-emerald-500 inline"></i>
-          Subnet: <span class="font-semibold text-emerald-600 dark:text-emerald-400">${currentNetwork.cidr}</span> • Gateway: <span class="font-semibold text-slate-700 dark:text-slate-200">${currentNetwork.gateway}</span>
-        `;
+        const headerPill = document.getElementById('header-net-pill');
+        if (headerPill) {
+          headerPill.innerHTML = `
+            <i data-lucide="network" class="w-3.5 h-3.5 text-emerald-500 inline"></i>
+            Subnet: <span class="font-semibold text-emerald-600 dark:text-emerald-400">${currentNetwork.cidr}</span> • Gateway: <span class="font-semibold text-slate-700 dark:text-slate-200">${currentNetwork.gateway}</span>
+          `;
+        }
+        const mobNetPill = document.getElementById('header-net-pill-mobile');
+        if (mobNetPill) {
+          mobNetPill.innerHTML = `
+            <i data-lucide="network" class="w-3 h-3 text-emerald-500 shrink-0"></i>
+            <span>Subnet: ${currentNetwork.cidr}</span>
+          `;
+        }
 
         // Update health pill
         loadNetworkHealth();
@@ -1537,7 +1615,10 @@
         const h = await hRes.json();
         const gwText = h.gateway_ms !== null ? `${h.gateway_ms.toFixed(1)} ms` : 'offline';
         const netText = h.internet_ms !== null ? `${h.internet_ms.toFixed(1)} ms` : 'offline';
-        document.getElementById('health-text').textContent = `GW: ${gwText} • Net: ${netText}`;
+        const dtEl = document.getElementById('health-text');
+        if (dtEl) dtEl.textContent = `GW: ${gwText} • Net: ${netText}`;
+        const mobEl = document.getElementById('health-text-mobile');
+        if (mobEl) mobEl.textContent = h.internet_ms !== null ? `${h.internet_ms.toFixed(0)} ms` : 'offline';
       } catch (e) {}
     }
 
@@ -1555,9 +1636,53 @@
       return null;
     }
 
-    // Render Devices Table
-    function renderDevicesTable() {
-      const tbody = document.getElementById('devices-table-body');
+    // View Mode & Sorting State
+    let currentViewMode = localStorage.getItem('lanwatch_view_mode') || 'rows'; // 'rows' or 'tiles'
+
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      localStorage.setItem('lanwatch_view_mode', mode);
+      const btnRows = document.getElementById('view-mode-rows');
+      const btnTiles = document.getElementById('view-mode-tiles');
+      const desktopHeader = document.getElementById('desktop-grid-header');
+
+      if (mode === 'rows') {
+        if (btnRows) btnRows.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs';
+        if (btnTiles) btnTiles.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+        if (desktopHeader) desktopHeader.classList.remove('md:hidden');
+      } else {
+        if (btnTiles) btnTiles.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs';
+        if (btnRows) btnRows.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+        if (desktopHeader) desktopHeader.classList.add('md:hidden');
+      }
+      renderDevicesView();
+    }
+
+    function handleSortSelect(val) {
+      const parts = val.split('-');
+      sortColumn = parts[0];
+      sortDirection = parts[1] === 'desc' ? -1 : 1;
+
+      // Update indicator arrows on desktop grid header
+      ['ip', 'name', 'category', 'score'].forEach(c => {
+        const ind = document.getElementById('sort-ind-' + c);
+        if (ind) {
+          ind.textContent = c === sortColumn ? (sortDirection === 1 ? '▲' : '▼') : '';
+        }
+      });
+
+      const selectSort = document.getElementById('select-sort');
+      if (selectSort && selectSort.value !== val) {
+        selectSort.value = val;
+      }
+      renderDevicesView();
+    }
+
+    // Modern HTML5 & Tailwind CSS Devices View
+    function renderDevicesView() {
+      const container = document.getElementById('devices-container');
+      if (!container) return;
+
       const searchQuery = document.getElementById('filter-search').value.toLowerCase();
       const categoryFilter = document.getElementById('filter-category').value;
       const trustFilter = document.getElementById('filter-trust').value;
@@ -1615,123 +1740,257 @@
       const activeIotDevices = currentDevices.filter(d => d.is_online === 1 && ['IoT / Smart Home', 'Assistente Vocale / Smart Speaker', 'Telecamera IP / Videosorveglianza'].includes(d.category));
       document.getElementById('kpi-iot-badge').textContent = activeIotDevices.length;
 
+      // Empty State
       if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="py-8 text-center text-slate-400">
-              Nessun dispositivo corrisponde ai filtri impostati.
-            </td>
-          </tr>
+        container.className = 'py-16 text-center text-slate-400 bg-white dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 space-y-3';
+        container.innerHTML = `
+          <div class="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center mx-auto text-slate-400">
+            <i data-lucide="search-x" class="w-6 h-6"></i>
+          </div>
+          <div class="font-bold text-sm text-slate-800 dark:text-slate-200">Nessun dispositivo trovato</div>
+          <p class="text-xs text-slate-400 max-w-sm mx-auto">Nessun elemento corrisponde ai filtri impostati. Prova a modificare la ricerca o i selettori di stato.</p>
         `;
+        lucide.createIcons();
         return;
       }
 
-      tbody.innerHTML = filtered.map(d => {
-        const isGateway = d.is_gateway;
-        const isLocal = d.is_local;
-        const displayName = d.custom_name || d.hostname || d.vendor || 'Dispositivo';
-        const score = d.security_score || 100;
-        let scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">${score}</span>`;
-        if (score < 60) {
-          scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">${score}</span>`;
-        } else if (score < 85) {
-          scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">${score}</span>`;
-        }
-
-        const webUrl = getDeviceWebUrl(d);
-        const webButton = webUrl ? `
-          <a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-colors" title="Apri interfaccia web in nuova scheda">
-            <i data-lucide="external-link" class="w-3 h-3"></i> Web UI
-          </a>
-        ` : '';
-
-        const trustBadge = d.is_trusted
-          ? `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2.5 h-2.5"></i> Fidato</span>`
-          : `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-0.5"><i data-lucide="help-circle" class="w-2.5 h-2.5"></i> Da Verificare</span>`;
-
-        const svcs = (d.services || []).map(s => {
-          let color = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-          if (s.port === 80) color = 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30';
-          if (s.port === 443 || s.port === 8006) color = 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
-          if (s.port === 22) color = 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30';
-
-          let label = `${s.service}:${s.port}`;
-          if (s.title && s.title.length > 0) {
-            label = `${s.service} ("${s.title.length > 18 ? s.title.slice(0, 16) + '...' : s.title}")`;
+      // Check current view mode
+      if (currentViewMode === 'tiles') {
+        container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5';
+        container.innerHTML = filtered.map(d => {
+          const isGateway = d.is_gateway;
+          const isLocal = d.is_local;
+          const displayName = d.custom_name || d.hostname || d.vendor || 'Dispositivo';
+          const score = d.security_score || 100;
+          let scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">${score}</span>`;
+          if (score < 60) {
+            scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">${score}</span>`;
+          } else if (score < 85) {
+            scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">${score}</span>`;
           }
-          return `<span class="px-1.5 py-0.5 rounded text-[10px] border ${color}" title="${escapeHtml(s.title || s.banner || s.service)}">${escapeHtml(label)}</span>`;
-        }).join(' ');
 
-        return `
-          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer" onclick="openDeviceModal('${d.mac}')">
-            <td class="py-3 px-4">
-              <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors">
-                  <i data-lucide="${d.icon || 'cpu'}" class="w-4 h-4"></i>
+          const webUrl = getDeviceWebUrl(d);
+          const webButton = webUrl ? `
+            <a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" class="flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1 shadow-xs transition-colors" title="Apri interfaccia web">
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Web UI
+            </a>
+          ` : '';
+
+          const trustBadge = d.is_trusted
+            ? `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2.5 h-2.5"></i> Fidato</span>`
+            : `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-0.5"><i data-lucide="help-circle" class="w-2.5 h-2.5"></i> Da Verificare</span>`;
+
+          const svcs = (d.services || []).map(s => {
+            let color = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+            if (s.port === 80) color = 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30';
+            if (s.port === 443 || s.port === 8006) color = 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+            if (s.port === 22) color = 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30';
+
+            let label = `${s.service}:${s.port}`;
+            if (s.title && s.title.length > 0) {
+              label = `${s.service} ("${s.title.length > 14 ? s.title.slice(0, 12) + '...' : s.title}")`;
+            }
+            return `<span class="px-1.5 py-0.5 rounded text-[10px] border ${color}">${escapeHtml(label)}</span>`;
+          }).join(' ');
+
+          return `
+            <article class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 hover:border-emerald-500/50 hover:shadow-xl dark:hover:shadow-emerald-950/25 active:scale-[0.99] transition-all cursor-pointer flex flex-col justify-between space-y-3 shadow-xs select-none" onclick="openDeviceModal('${d.mac}')">
+              <!-- Top Row: Icon + Name + Score -->
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="relative h-11 w-11 shrink-0 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-xs">
+                    <i data-lucide="${d.icon || 'cpu'}" class="w-5 h-5"></i>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ${d.is_online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">${escapeHtml(displayName)}</span>
+                      ${isGateway ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">GW</span>' : ''}
+                      ${isLocal ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Host</span>' : ''}
+                    </div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      ${escapeHtml(d.vendor || 'Dispositivo')}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-100">
-                    <span>${escapeHtml(displayName)}</span>
-                    ${isGateway ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">Gateway</span>' : ''}
-                    ${isLocal ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Questo PC</span>' : ''}
-                  </div>
-                  <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span class="flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full ${d.is_online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
-                      <span>${d.is_online ? 'Attivo' : 'Offline'}</span>
-                    </span>
-                    <span>•</span>
-                    ${trustBadge}
-                  </div>
+                <div class="shrink-0 flex flex-col items-end gap-1">
+                  ${scoreBadge}
+                  ${trustBadge}
                 </div>
               </div>
-            </td>
-            <td class="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 font-medium">
-              ${d.ip}
-            </td>
-            <td class="py-3 px-4">
-              <div class="font-mono text-xs text-slate-500 dark:text-slate-400">${d.mac}</div>
-              <div class="text-[11px] font-medium text-slate-800 dark:text-slate-300 truncate max-w-xs">${d.vendor || 'Sconosciuto'}</div>
-            </td>
-            <td class="py-3 px-4">
-              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 mb-0.5">${d.category || 'Dispositivo'}</span>
-              <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs">${d.os_family || 'Sconosciuto'}</div>
-            </td>
-            <td class="py-3 px-4">
-              <div class="flex flex-wrap items-center gap-1.5 max-w-xs">
+
+              <!-- Specs Card -->
+              <div class="bg-slate-50 dark:bg-slate-950/70 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">IP</span>
+                  <span class="font-mono font-semibold text-slate-800 dark:text-slate-200">${d.ip}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Categoria</span>
+                  <span class="truncate max-w-[130px] font-medium text-slate-700 dark:text-slate-300">${escapeHtml(d.category || 'Dispositivo')}</span>
+                </div>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-200/50 dark:border-slate-800/50 text-[11px] text-slate-400 font-mono">
+                  <span>MAC</span>
+                  <span>${d.mac}</span>
+                </div>
+              </div>
+
+              <!-- Services Chips -->
+              <div class="flex flex-wrap items-center gap-1 min-h-[22px]">
+                ${svcs || '<span class="text-slate-400 dark:text-slate-600 text-[10px]">Nessun servizio standard</span>'}
+              </div>
+
+              <!-- Bottom Actions -->
+              <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800" onclick="event.stopPropagation()">
                 ${webButton}
-                ${svcs || '<span class="text-slate-400 dark:text-slate-600 text-[11px]">-</span>'}
+                <button onclick="openDeviceModal('${d.mac}')" class="flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1 transition-colors">
+                  <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i> Dettagli
+                </button>
               </div>
-            </td>
-            <td class="py-3 px-4 text-center">
-              ${scoreBadge}
-            </td>
-            <td class="py-3 px-4 text-right no-print" onclick="event.stopPropagation()">
-              <button onclick="openDeviceModal('${d.mac}')" class="px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded border border-slate-300 dark:border-slate-700 transition-colors">
-                Dettagli
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
+            </article>
+          `;
+        }).join('');
+      } else {
+        // ROWS MODE: High-tech Modern CSS Grid Component
+        container.className = 'space-y-2.5';
+        container.innerHTML = filtered.map(d => {
+          const isGateway = d.is_gateway;
+          const isLocal = d.is_local;
+          const displayName = d.custom_name || d.hostname || d.vendor || 'Dispositivo';
+          const score = d.security_score || 100;
+          let scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">${score}</span>`;
+          if (score < 60) {
+            scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">${score}</span>`;
+          } else if (score < 85) {
+            scoreBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">${score}</span>`;
+          }
+
+          const webUrl = getDeviceWebUrl(d);
+          const webButton = webUrl ? `
+            <a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-colors shrink-0" title="Apri interfaccia web">
+              <i data-lucide="external-link" class="w-3 h-3"></i> Web UI
+            </a>
+          ` : '';
+
+          const webButtonMobile = webUrl ? `
+            <a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1.5 shadow-sm transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Web UI
+            </a>
+          ` : '';
+
+          const trustBadge = d.is_trusted
+            ? `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2.5 h-2.5"></i> Fidato</span>`
+            : `<span class="px-1.5 py-0.2 text-[9px] font-semibold uppercase rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-0.5"><i data-lucide="help-circle" class="w-2.5 h-2.5"></i> Da Verificare</span>`;
+
+          const svcs = (d.services || []).map(s => {
+            let color = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+            if (s.port === 80) color = 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30';
+            if (s.port === 443 || s.port === 8006) color = 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+            if (s.port === 22) color = 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30';
+
+            let label = `${s.service}:${s.port}`;
+            if (s.title && s.title.length > 0) {
+              label = `${s.service} ("${s.title.length > 16 ? s.title.slice(0, 14) + '...' : s.title}")`;
+            }
+            return `<span class="px-1.5 py-0.5 rounded text-[10px] border ${color}">${escapeHtml(label)}</span>`;
+          }).join(' ');
+
+          return `
+            <article class="group relative bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 hover:border-emerald-500/50 hover:shadow-lg dark:hover:shadow-emerald-950/20 active:scale-[0.99] transition-all cursor-pointer select-none space-y-3 md:space-y-0" onclick="openDeviceModal('${d.mac}')">
+              <!-- Desktop CSS Grid Row (Hidden on mobile < md) -->
+              <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-3">
+                <!-- Col 1-4: Device & Identity -->
+                <div class="col-span-1 md:col-span-4 flex items-center gap-3 min-w-0">
+                  <div class="relative h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-200 group-hover:text-emerald-500 group-hover:border-emerald-500/40 transition-colors shadow-xs">
+                    <i data-lucide="${d.icon || 'cpu'}" class="w-5 h-5"></i>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ${d.is_online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">${escapeHtml(displayName)}</span>
+                      ${isGateway ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">GW</span>' : ''}
+                      ${isLocal ? '<span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Host</span>' : ''}
+                    </div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                      <span class="truncate">${escapeHtml(d.vendor || 'Dispositivo')}</span>
+                      <span>•</span>
+                      ${trustBadge}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Col 5-6: IP & MAC (Desktop) -->
+                <div class="col-span-1 md:col-span-2 hidden md:block">
+                  <div class="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">${d.ip}</div>
+                  <div class="font-mono text-[10px] text-slate-400 dark:text-slate-500 truncate">${d.mac}</div>
+                </div>
+
+                <!-- Col 7-8: Category & OS (Desktop) -->
+                <div class="col-span-1 md:col-span-2 hidden md:block">
+                  <span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate max-w-full">${escapeHtml(d.category || 'Dispositivo')}</span>
+                  <div class="text-[10px] text-slate-400 truncate mt-0.5">${escapeHtml(d.os_family || 'Linux / Embedded')}</div>
+                </div>
+
+                <!-- Col 9-10: Services (Desktop) -->
+                <div class="col-span-1 md:col-span-2 hidden md:block">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    ${webButton}
+                    ${svcs || '<span class="text-slate-400 text-[11px]">-</span>'}
+                  </div>
+                </div>
+
+                <!-- Col 11: Score (Desktop) -->
+                <div class="col-span-1 md:col-span-1 hidden md:flex justify-center">
+                  ${scoreBadge}
+                </div>
+
+                <!-- Col 12: Action (Desktop) -->
+                <div class="col-span-1 md:col-span-1 hidden md:flex justify-end" onclick="event.stopPropagation()">
+                  <button onclick="openDeviceModal('${d.mac}')" class="px-2.5 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors">
+                    Dettagli
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mobile Touch View (Visible only on mobile < md) -->
+              <div class="block md:hidden space-y-2.5 pt-0.5">
+                <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 dark:bg-slate-950/70 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                  <div>
+                    <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Indirizzo IP</span>
+                    <span class="font-mono font-semibold text-slate-800 dark:text-slate-200 text-xs">${d.ip}</span>
+                  </div>
+                  <div>
+                    <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Categoria</span>
+                    <span class="truncate block text-slate-700 dark:text-slate-300 font-medium text-xs">${escapeHtml(d.category || 'Dispositivo')}</span>
+                  </div>
+                  <div class="col-span-2 pt-1 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    <span>MAC: ${d.mac}</span>
+                    <div class="flex items-center gap-1">
+                      <span class="text-[10px] text-slate-400">Score:</span>
+                      ${scoreBadge}
+                    </div>
+                  </div>
+                </div>
+
+                ${svcs ? `<div class="flex flex-wrap items-center gap-1.5 pt-0.5">${svcs}</div>` : ''}
+
+                <div class="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/60" onclick="event.stopPropagation()">
+                  ${webButtonMobile}
+                  <button onclick="openDeviceModal('${d.mac}')" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 transition-colors">
+                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i> Dettagli & Modifica
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
 
       lucide.createIcons();
     }
 
-    function sortDevices(col) {
-      if (sortColumn === col) {
-        sortDirection *= -1;
-      } else {
-        sortColumn = col;
-        sortDirection = 1;
-      }
-      // Update sort indicators
-      ['ip', 'name', 'category', 'score'].forEach(function(c) {
-        const el = document.getElementById('sort-' + c);
-        if (el) el.textContent = c === sortColumn ? (sortDirection === 1 ? '▲' : '▼') : '▲';
-      });
-      renderDevicesTable();
-    }
+    // Keep alias for backwards compatibility
+    const renderDevicesTable = renderDevicesView;
 
     function filterUntrustedOnly() {
       switchTab('inventory');
