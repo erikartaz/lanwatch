@@ -20,6 +20,8 @@ services:
     volumes:
       # Directory per il database persistente SQLite (lanscanner.db)
       - ./data:/data
+      # Mount dei file dell'app e frontend per aggiornamenti istantanei via git pull
+      - ./lanscanner:/app/lanscanner
     cap_add:
       - NET_ADMIN
       - NET_RAW

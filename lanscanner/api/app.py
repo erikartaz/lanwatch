@@ -686,5 +686,12 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 async def root():
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
-        return FileResponse(index_file)
+        return FileResponse(
+            index_file,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
     return HTMLResponse("<h1>LANWatch Backend is Running!</h1><p>Frontend static files loading...</p>")
